@@ -1,6 +1,6 @@
 # Emacs Files
 .#*
-
-
+.project
+/CMakeLists.txt
 # Allow user to enable or disable this w/o changing repo
 rrbot_gazebo_plugins/CATKIN_IGNORE

@@ -8,6 +8,11 @@
 <xacro:property name="height1" value="2" /> <!-- 2m -->
 <xacro:property name="height2" value="1" /> <!-- 1m -->
 
+<!-- define colors -->
+<material name="blue">
+  <color rgba="0 0 0.8 1" />
+</material>
+
 <!-- define links -->
 <link name="world" />
 
@@ -54,6 +59,7 @@
     <geometry>
       <box size="${width} ${width} ${height2}" />
     </geometry>
+    <material name="blue" />
     <origin xyz="0 0 ${height2/2}" rpy="0 0 0" />
   </visual>
   
