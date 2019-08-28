@@ -12,7 +12,7 @@
 <link name="world" />
 
 <!-- Base Link-->
-<link name="link1">
+<link name="base_link">
   <collision>
     <geometry>
       <box size="${width} ${width} ${height1}" />
@@ -36,13 +36,13 @@
   </inertial>
 </link>
 
-<gazebo reference="link1">
+<gazebo reference="base_link">
   <material>Gazebo/Orange</material>
 </gazebo>
 
 <joint name="ground_joint" type="fixed">  <!-- fix to the ground -->
   <parent link="world" />
-  <child link="link1" />
+  <child link="base_link" />
 </joint>
 
 <!-- Link 2 -->
@@ -75,7 +75,7 @@
 </gazebo>
 
 <joint name="joint1" type="prismatic"> 
-  <parent link="link1" />
+  <parent link="base_link" />
   <child link="link2" />
   <limit effort="100" velocity="0.1" lower="-1.0" upper="1.0" />
   <origin xyz="0 ${width} ${height1/2}" rpy="0 0 0" />
