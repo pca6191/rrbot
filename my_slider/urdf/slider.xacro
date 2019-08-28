@@ -8,11 +8,6 @@
 <xacro:property name="height1" value="2" /> <!-- 2m -->
 <xacro:property name="height2" value="1" /> <!-- 1m -->
 
-<!-- define colors -->
-<material name="blue">
-  <color rgba="0 0 0.8 1" />
-</material>
-
 <!-- define links -->
 <link name="world" />
 
@@ -41,6 +36,10 @@
   </inertial>
 </link>
 
+<gazebo reference="link1">
+  <material>Gazebo/Orange</material>
+</gazebo>
+
 <joint name="ground_joint" type="fixed">  <!-- fix to the ground -->
   <parent link="world" />
   <child link="link1" />
@@ -59,7 +58,6 @@
     <geometry>
       <box size="${width} ${width} ${height2}" />
     </geometry>
-    <material name="blue" />
     <origin xyz="0 0 ${height2/2}" rpy="0 0 0" />
   </visual>
   
@@ -72,7 +70,11 @@
   </inertial>
 </link>
 
-<joint name="link1_2_joint" type="prismatic"> 
+<gazebo reference="link2">
+  <material>Gazebo/Black</material>
+</gazebo>
+
+<joint name="joint1" type="prismatic"> 
   <parent link="link1" />
   <child link="link2" />
   <limit effort="100" velocity="0.1" lower="-1.0" upper="1.0" />
@@ -91,5 +93,14 @@
     <mechanicalReduction>1</mechanicalReduction>
   </actuator>
 </transmission>
+
+<!-- ros_control plugin -->
+ <gazebo>
+   <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+     <robotNamespace>/slider</robotNamespace>
+     <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+     <legacyModeNS>true</legacyModeNS>  <!-- KC_DBG : to avoid gazebo version warring-->
+   </plugin>
+ </gazebo>
  
 </robot>
