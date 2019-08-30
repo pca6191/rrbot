@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<robot name="rotor" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!-- define constants -->
+<xacro:property name="PI" value="3.1415926" />
+<xacro:property name="mass" value="1" /> <!-- kg -->
+<xacro:property name="width" value="0.2" /> <!-- 0.1m -->
+<xacro:property name="height" value="0.4" /> <!-- 0.2m -->
+<xacro:property name="thickness" value="0.02" /> <!-- 2 cm -->
+<xacro:property name="wheel_thickness" value="0.02" /> <!-- 1 cm -->
+<xacro:property name="wheel_radius" value="0.05" /> <!-- 5 cm -->
+
+<!-- define links -->
+
+<!-- Base Link-->
+<link name="base_link">
+  <collision>
+    <geometry>
+      <box size="${width} ${height} ${thickness}" />
+    </geometry>
+    <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0" />
+  </collision>
+  
+  <visual>
+    <geometry>
+      <box size="${width} ${height} ${thickness}" />
+    </geometry>
+    <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0" />
+  </visual>
+  
+  <inertial>
+    <mass value="${mass}" />
+    <inertia
+	  ixx="${mass / 12.0 * (width*height + thickness*thickness)}" ixy="0.0" ixz="0.0"
+	  iyy="${mass / 12.0 * (thickness*thickness + width*height)}" iyz="0.0"
+	  izz="${mass / 12.0 * (width*height + width*height)}"/>
+  </inertial>
+</link>
+
+<gazebo reference="base_link">
+  <material>Gazebo/Orange</material>
+</gazebo>
+
+<!-- Left Wheel Link -->
+<link name="left_wheel_link">
+  <collision>
+    <geometry>
+      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+  </collision>
+  
+  <visual>
+    <geometry>
+      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+    <material name="blue">
+      <color rgba="0 0 .8 1"/>
+    </material>
+  </visual>
+</link>
+
+<gazebo reference="left_wheel_link">
+  <material>Gazebo/Black</material>
+</gazebo>
+
+<joint name="left_wheel_joint" type="continuous"> 
+  <parent link="base_link" />
+  <child link="left_wheel_link" />
+  <origin xyz="${width/2} 0 ${wheel_radius}" rpy="0 0 0" />
+  <axis xyz="1 0 0" />
+</joint>
+
+<!-- Right wheel Link -->
+<link name="right_wheel_link">
+  <collision>
+    <geometry>
+      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+  </collision>
+  
+  <visual>
+    <geometry>
+      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+    <material name="blue">
+      <color rgba="0 0 .8 1"/>
+    </material>
+  </visual>
+</link>
+
+<gazebo reference="right_wheel_link">
+  <material>Gazebo/Blue</material>
+</gazebo>
+
+<joint name="right_wheel_joint" type="continuous"> 
+  <parent link="base_link" />
+  <child link="right_wheel_link" />
+  <origin xyz="${-width/2} 0 ${wheel_radius}" rpy="0 0 0" />
+  <axis xyz="1 0 0" />
+</joint>
+
+
+<transmission name="left_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="left_whell_joint">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="left_motor">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="right_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="right_whell_joint">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="right_motor">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+
+<!-- ros_control plugin -->
+<!--
+ <gazebo>
+   <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+     <robotNamespace>/rotor</robotNamespace>
+     <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+     <legacyModeNS>true</legacyModeNS>
+   </plugin>
+ </gazebo>
+-->
+ 
+</robot>
