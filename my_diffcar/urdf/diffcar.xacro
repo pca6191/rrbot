@@ -4,13 +4,93 @@
 <!-- define constants -->
 <xacro:property name="PI" value="3.1415926" />
 <xacro:property name="mass" value="1" /> <!-- kg -->
+<xacro:property name="wheel_mass" value="0.3" /> <!-- kg -->
 <xacro:property name="width" value="0.2" /> <!-- 0.1m -->
 <xacro:property name="height" value="0.4" /> <!-- 0.2m -->
 <xacro:property name="thickness" value="0.02" /> <!-- 2 cm -->
 <xacro:property name="wheel_thickness" value="0.02" /> <!-- 1 cm -->
 <xacro:property name="wheel_radius" value="0.05" /> <!-- 5 cm -->
 
+<!-- define macros -->
+<xacro:macro name="sphere_inertial_matrix_" params="m r">
+  <inertial>
+    <mass value="${m}" />
+    <inertia ixx="${2*m*r*r/5}" ixy="0" ixz="0"
+             iyy="${2*m*r*r/5}" iyz="0" 
+             izz="${2*m*r*r/5}" />
+    </inertial>
+</xacro:macro>
+    
+<xacro:macro name="cylinder_inertial_matrix_" params="m r h">
+  <inertial>
+    <mass value="${m}" />
+    <inertia ixx="${m*(3*r*r+h*h)/12}" ixy = "0" ixz = "0"
+             iyy="${m*(3*r*r+h*h)/12}" iyz = "0"
+             izz="${m*r*r/2}" /> 
+  </inertial>
+</xacro:macro>
+
+<xacro:macro name="wheel_" params="prefix reflect">
+<link name="${prefix}_wheel_link">
+  <visual>
+    <geometry>
+      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+    <material name="blue">
+      <color rgba="0 0 .8 1"/>
+    </material>
+  </visual>
+  <collision>
+    <geometry>
+      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+  </collision>
+  <cylinder_inertial_matrix_  m="${wheel_mass}" r="${wheel_radius}" h="${wheel_thickness}" />
+</link>
+<gazebo reference="${prefix}_wheel_link">
+  <material>Gazebo/Blue</material>
+</gazebo>
+<joint name="${prefix}_wheel_joint" type="continuous"> 
+  <parent link="base_link" />
+  <child link="${prefix}_wheel_link" />
+  <origin xyz="${(width/2 + wheel_thickness/2)*reflect} 0 ${wheel_radius}" rpy="0 0 0" />
+  <axis xyz="1 0 0" />
+</joint>
+<transmission name="${prefix}_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="${prefix}_whell_joint">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="${prefix}_motor">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+</xacro:macro>
+    
 <!-- define links -->
+
+<!-- dumy foot print -->
+<link name="base_foot_print">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <box size="0.001 0.001 0.001" />
+    </geometry>
+  </visual>
+</link>
+
+<gazebo reference="base_footprint">
+  <turnGravityOff>false</turnGravityOff>
+</gazebo>
+
+<joint name="base_footprint_joint" type="fixed">
+  <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0" />        
+  <parent link="base_foot_print"/>
+  <child link="base_link" />
+</joint>
 
 <!-- Base Link-->
 <link name="base_link">
@@ -42,69 +122,14 @@
 </gazebo>
 
 <!-- Left Wheel Link -->
-<link name="left_wheel_link">
-  <collision>
-    <geometry>
-      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
-    </geometry>
-    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
-  </collision>
-  
-  <visual>
-    <geometry>
-      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
-    </geometry>
-    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
-    <material name="blue">
-      <color rgba="0 0 .8 1"/>
-    </material>
-  </visual>
-</link>
+<wheel_ prefix="left" reflect="-1" />
 
-<gazebo reference="left_wheel_link">
-  <material>Gazebo/Black</material>
-</gazebo>
+<!-- Right Wheel Link -->
+<wheel_ prefix="right" reflect="1" />
 
-<joint name="left_wheel_joint" type="continuous"> 
-  <parent link="base_link" />
-  <child link="left_wheel_link" />
-  <origin xyz="${width/2} 0 ${wheel_radius}" rpy="0 0 0" />
-  <axis xyz="1 0 0" />
-</joint>
-
-<!-- Right wheel Link -->
-<link name="right_wheel_link">
-  <collision>
-    <geometry>
-      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
-    </geometry>
-    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
-  </collision>
-  
-  <visual>
-    <geometry>
-      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
-    </geometry>
-    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
-    <material name="blue">
-      <color rgba="0 0 .8 1"/>
-    </material>
-  </visual>
-</link>
-
-<gazebo reference="right_wheel_link">
-  <material>Gazebo/Blue</material>
-</gazebo>
-
-<joint name="right_wheel_joint" type="continuous"> 
-  <parent link="base_link" />
-  <child link="right_wheel_link" />
-  <origin xyz="${-width/2} 0 ${wheel_radius}" rpy="0 0 0" />
-  <axis xyz="1 0 0" />
-</joint>
 
 <!-- front caster link -->
-<link name="front_caster_link">
+<!--link name="front_caster_link">
   <visual>
     <geometry>
       <sphere radius="${(wheel_radius - thickness/2)/2}" />
@@ -114,17 +139,17 @@
       <color rgba="0 0 0 1"/>
     </material>
   </visual>
-</link>
+</link-->
 
-<joint name="joint_front_caster" type="continuous">
+<!--joint name="joint_front_caster" type="continuous">
 <parent link="base_link" />
 <child link="front_caster_link" />
 <origin xyz="0 ${height/2} ${(wheel_radius - thickness/2)/2}" rpy="0 0 0" />
 <axis xyz="1 0 0" />
-</joint>
+</joint-->
 
 <!-- back caster link -->
-<link name="back_caster_link">
+<!--link name="back_caster_link">
   <visual>
     <geometry>
       <sphere radius="${(wheel_radius - thickness/2)/2}" />
@@ -134,37 +159,14 @@
       <color rgba="0 0 0 1"/>
     </material>
   </visual>
-</link>
+</link-->
 
-<joint name="joint_back_caster" type="continuous">
+<!--joint name="joint_back_caster" type="continuous">
 <parent link="base_link" />
 <child link="back_caster_link" />
 <origin xyz="0 ${-height/2} ${(wheel_radius - thickness/2)/2}" rpy="0 0 0" />
 <axis xyz="1 0 0" />
-</joint>
-
-<transmission name="left_tran">
-  <type>transmission_interface/SimpleTransmission</type>
-  <joint name="left_whell_joint">
-    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
-  </joint>
-  <actuator name="left_motor">
-    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
-    <mechanicalReduction>1</mechanicalReduction>
-  </actuator>
-</transmission>
-
-<transmission name="right_tran">
-  <type>transmission_interface/SimpleTransmission</type>
-  <joint name="right_whell_joint">
-    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
-  </joint>
-  <actuator name="right_motor">
-    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
-    <mechanicalReduction>1</mechanicalReduction>
-  </actuator>
-</transmission>
-
+</joint-->
 
 <!-- ros_control plugin -->
 <!--
@@ -176,5 +178,31 @@
    </plugin>
  </gazebo>
 -->
+
+ <!-- controller -->
+      <!--gazebo>
+        <plugin name="differential_drive_controller" 
+                filename="libgazebo_ros_diff_drive.so">
+          <rosDebugLevel>Debug</rosDebugLevel>
+          <publishWheelTF>true</publishWheelTF>
+          <robotNamespace>/</robotNamespace>
+          <publishTf>1</publishTf>
+          <publishWheelJointState>true</publishWheelJointState>
+          <alwaysOn>true</alwaysOn>
+          <updateRate>100.0</updateRate>
+          <legacyMode>true</legacyMode>
+          <leftJoint>left_wheel_joint</leftJoint>
+          <rightJoint>right_wheel_joint</rightJoint>
+          <wheelSeparation>${width + wheel_thickness}</wheelSeparation>
+          <wheelDiameter>${2*wheel_radius}</wheelDiameter>
+          <broadcastTF>1</broadcastTF>
+          <wheelTorque>30</wheelTorque>
+          <wheelAcceleration>1.8</wheelAcceleration>
+          <commandTopic>cmd_vel</commandTopic>
+          <odometryFrame>odom</odometryFrame> 
+          <odometryTopic>odom</odometryTopic> 
+          <robotBaseFrame>base_footprint_joint</robotBaseFrame>
+        </plugin>
+      </gazebo--> 
  
 </robot>
