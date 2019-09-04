@@ -14,6 +14,15 @@
 <xacro:property name="caster_mass" value="0.1" /> <!-- kg -->
 
 <!-- define macros -->
+<xacro:macro name="box_inertia_matrix_" params="m w h d">
+  <inertial>
+    <mass value="${m}"/>
+    <inertia ixx="${m / 12.0 * (d*d + h*h)}" ixy="0.0" ixz="0.0" 
+             iyy="${m / 12.0 * (w*w + h*h)}" iyz="0.0" 
+             izz="${m / 12.0 * (w*w + d*d)}"/>
+  </inertial>
+</xacro:macro>
+  
 <xacro:macro name="sphere_inertial_matrix_" params="m r">
   <inertial>
     <mass value="${m}" />
@@ -57,12 +66,12 @@
 <joint name="${prefix}_wheel_joint" type="continuous"> 
   <parent link="base_link" />
   <child link="${prefix}_wheel_link" />
-  <origin xyz="${(width/2 + wheel_thickness/2)*reflect} 0 ${wheel_radius}" rpy="0 0 0" />
+  <origin xyz="${(width/2 + wheel_thickness/2)*reflect} 0 0" rpy="0 0 0" />
   <axis xyz="1 0 0" />
 </joint>
 <transmission name="${prefix}_tran">
   <type>transmission_interface/SimpleTransmission</type>
-  <joint name="${prefix}_whell_joint">
+  <joint name="${prefix}_wheel_joint">
     <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
   </joint>
   <actuator name="${prefix}_motor">
@@ -92,9 +101,9 @@
     <sphere_inertial_matrix_  m="${caster_mass}" r="${caster_radius}" />
   </link>
   <joint name="${prefix}_caster_joint" type="continuous">
-  <origin xyz="0 ${reflect*(height/2 - caster_radius)} ${caster_radius}" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="${prefix}_caster_link"/>
+    <origin xyz="0 ${reflect*(height/2 - caster_radius)} ${-(caster_radius + thickness/2)}" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
   </joint>
   <gazebo reference="${prefix}_caster_link">
@@ -104,25 +113,20 @@
     
 <!-- define links -->
 
-<!-- dumy foot print -->
-<link name="base_foot_print">
+<!-- base foot print -->
+<link name="base_footprint">
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
       <box size="0.001 0.001 0.001" />
     </geometry>
   </visual>
+  <box_inertia_matrix_ m="${mass*2}" w="0.001" h="0.001" d="0.001" />
 </link>
 
 <gazebo reference="base_footprint">
   <turnGravityOff>false</turnGravityOff>
 </gazebo>
-
-<joint name="base_footprint_joint" type="fixed">
-  <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0" />        
-  <parent link="base_foot_print"/>
-  <child link="base_link" />
-</joint>
 
 <!-- Base Link-->
 <link name="base_link">
@@ -130,24 +134,20 @@
     <geometry>
       <box size="${width} ${height} ${thickness}" />
     </geometry>
-    <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0" />
   </collision>
-  
   <visual>
     <geometry>
       <box size="${width} ${height} ${thickness}" />
     </geometry>
-    <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0" />
   </visual>
-  
-  <inertial>
-    <mass value="${mass}" />
-    <inertia
-	  ixx="${mass / 12.0 * (width*height + thickness*thickness)}" ixy="0.0" ixz="0.0"
-	  iyy="${mass / 12.0 * (thickness*thickness + width*height)}" iyz="0.0"
-	  izz="${mass / 12.0 * (width*height + width*height)}"/>
-  </inertial>
+  <box_inertia_matrix_ m="${mass}" w="${width}" h="${height}" d="${thickness}" />
 </link>
+
+<joint name="base_link_joint" type="fixed">
+  <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0" />        
+  <parent link="base_footprint"/>
+  <child link="base_link" />
+</joint>
 
 <gazebo reference="base_link">
   <material>Gazebo/Orange</material>
@@ -166,19 +166,8 @@
 <!-- back caster link -->
 <caster_ prefix="back" reflect="-1" />
 
-<!-- ros_control plugin -->
-<!--
- <gazebo>
-   <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-     <robotNamespace>/rotor</robotNamespace>
-     <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
-     <legacyModeNS>true</legacyModeNS>
-   </plugin>
- </gazebo>
--->
-
- <!-- gazebo controller plugin-->
- <!-- ref:https://kiranpalla.com/autonomous-navigation-ros-differential-drive-robot-simulation/simple-navigation-with-differential-drive-plugin/-->
+<!-- gazebo controller plugin-->
+<!-- ref:https://kiranpalla.com/autonomous-navigation-ros-differential-drive-robot-simulation/simple-navigation-with-differential-drive-plugin/-->
 <gazebo>
 <plugin name="differential_drive_controller" 
         filename="libgazebo_ros_diff_drive.so">
@@ -200,7 +189,7 @@
   <commandTopic>cmd_vel</commandTopic>
   <odometryFrame>odom</odometryFrame> 
   <odometryTopic>odom</odometryTopic> 
-  <robotBaseFrame>base_footprint_joint</robotBaseFrame>
+  <robotBaseFrame>base_footprint</robotBaseFrame>
 </plugin>
 </gazebo> 
 
