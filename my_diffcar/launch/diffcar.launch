@@ -25,6 +25,13 @@
   <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
     args="-urdf -model diffcar -param robot_description"/>
+    
+  <!-- using teleop_twist_keyboard -->
+  <!-- maybe need to: $ sudo apt install ros-kinetic-teleop-twist-keyboard -->
+  <node name="teleop" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" output="screen" />
+  
+
+
 
   <!-- Load joint controller configurations from YAML file to parameter server -->
   <!--rosparam file="$(find my_diffcar)/config/diffcar_control.yaml" command="load"/ -->
@@ -35,14 +42,17 @@
 					  joint1_velocity_controller" /-->
 
   <!-- convert joint states to TF transforms for rviz, etc -->
+  <!--
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
 	respawn="false" output="screen">
     <remap from="/joint_states" to="/diffcar/joint_states" />
   </node>
+  -->
   
   <!-- 運作 joint_state_publisher node，發布關節狀態 -->
+  <!--
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node> 
- 
+  -->
   
 
 </launch>
