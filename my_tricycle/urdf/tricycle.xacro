@@ -72,16 +72,6 @@
   <origin xyz="${(width/2 + wheel_thickness/2)*reflect} 0 0" rpy="0 0 0" />
   <axis xyz="1 0 0" />
 </joint>
-<transmission name="${prefix}_tran">
-  <type>transmission_interface/SimpleTransmission</type>
-  <joint name="${prefix}_wheel_joint">
-    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
-  </joint>
-  <actuator name="${prefix}_motor">
-    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
-    <mechanicalReduction>1</mechanicalReduction>
-  </actuator>
-</transmission> 
 </xacro:macro>
       
 <!-- define links -->
@@ -185,6 +175,16 @@
   <origin xyz="0 ${-stick_height/2 + disk_radius} ${-stick_thickness/2 - disk_thickness/2}" rpy="0 0 0" />
   <axis xyz="0 0 1" />
 </joint>
+<transmission name="disk_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="disk_link_joint">
+    <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="disk_motor">
+    <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission> 
 
 <!-- steer_wheel -->
 <link name="steer_wheel_link">
@@ -214,6 +214,16 @@
   <origin xyz="0 0 ${-wheel_radius/2 - disk_thickness/2}" rpy="0 0 0" />
   <axis xyz="1 0 0" />
 </joint>
+<transmission name="steer_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="steer_wheel_joint">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="steer_motor">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission> 
 
 <!-- gazebo controller plugin: ref: http://gazebosim.org/tutorials/?tut=ros_control-->
 <!-- ref: http://www.theconstructsim.com/ros-qa-126-how-to-configure-the-differential-drive-ros-controller/-->
