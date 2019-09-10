@@ -7,7 +7,7 @@ joint_state_controller:
 steer_velocity_controller:
   type: velocity_controllers/JointVelocityController
   joint: steer_wheel_joint
-  pid: {p: 100.0, i: 0.01, d: 1.0}
+  pid: {p: 5.0, i: 0.0, d: 0.0}
   
 # Velocity Controllers ---------------------------------------
 steer_direction_controller:
