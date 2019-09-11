@@ -1,0 +1,9 @@
+<library path="lib/libagv_ackermann_steering_controller">
+
+  <class name="agv_ackermann_steering_controller/AgvAckermannSteeringController" type="agv_ackermann_steering_controller::AgvAckermannSteeringController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      The AgvAckermannSteeringController tracks velocity commands. It expects 1 VelocityJointInterface and 1 PositionJointInterfece types of hardware interfaces.
+    </description>
+  </class>
+
+</library>

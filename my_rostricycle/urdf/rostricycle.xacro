@@ -1,0 +1,263 @@
+<?xml version="1.0"?>
+<robot name="rostricycle" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!-- define constants -->
+<xacro:property name="PI" value="3.1415926" />
+<xacro:property name="mass" value="1" /> 
+<xacro:property name="wheel_mass" value="0.3" />
+<xacro:property name="width" value="0.2" />
+<xacro:property name="height" value="0.4" />
+<xacro:property name="thickness" value="0.02" />
+<xacro:property name="wheel_thickness" value="0.02" />
+<xacro:property name="wheel_radius" value="0.05" />
+<xacro:property name="stick_width" value="${(wheel_thickness)*4}" />
+<xacro:property name="stick_height" value="${(wheel_radius)*4}" />
+<xacro:property name="stick_thickness" value="${thickness}" />
+<xacro:property name="disk_radius" value="${(stick_width - thickness*2)/2}" />
+<xacro:property name="disk_thickness" value="${thickness/2}" />
+<xacro:property name="ear_width" value="${disk_radius}" />
+<xacro:property name="ear_height" value="${disk_radius*2}" />
+<xacro:property name="ear_thickness" value="${thickness/2}" />
+
+<!-- define macros -->
+<xacro:macro name="box_inertia_matrix_" params="m w h d">
+  <inertial>
+    <mass value="${m}"/>
+    <inertia ixx="${m / 12.0 * (d*d + h*h)}" ixy="0.0" ixz="0.0" 
+             iyy="${m / 12.0 * (w*w + h*h)}" iyz="0.0" 
+             izz="${m / 12.0 * (w*w + d*d)}"/>
+  </inertial>
+</xacro:macro>
+  
+<xacro:macro name="sphere_inertial_matrix_" params="m r">
+  <inertial>
+    <mass value="${m}" />
+    <inertia ixx="${2*m*r*r/5}" ixy="0" ixz="0"
+             iyy="${2*m*r*r/5}" iyz="0" 
+             izz="${2*m*r*r/5}" />
+    </inertial>
+</xacro:macro>
+    
+<xacro:macro name="cylinder_inertial_matrix_" params="m r h">
+  <inertial>
+    <mass value="${m}" />
+    <inertia ixx="${m*(3*r*r+h*h)/12}" ixy = "0" ixz = "0"
+             iyy="${m*(3*r*r+h*h)/12}" iyz = "0"
+             izz="${m*r*r/2}" /> 
+  </inertial>
+</xacro:macro>
+
+<xacro:macro name="wheel_" params="prefix reflect">
+<link name="${prefix}_wheel_link">
+  <visual>
+    <geometry>
+      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+    <material name="blue">
+      <color rgba="0 0 .8 1"/>
+    </material>
+  </visual>
+  <collision>
+    <geometry>
+      <cylinder length="${wheel_thickness}" radius="${wheel_radius}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+  </collision>
+  <cylinder_inertial_matrix_  m="${wheel_mass}" r="${wheel_radius}" h="${wheel_thickness}" />
+</link>
+<gazebo reference="${prefix}_wheel_link">
+  <material>Gazebo/Blue</material>
+</gazebo>
+<joint name="${prefix}_wheel_joint" type="continuous">
+  <parent link="base_link" />
+  <child link="${prefix}_wheel_link" />
+  <origin xyz="${(width/2 + wheel_thickness/2)*reflect} 0 0" rpy="0 0 0" />
+  <axis xyz="1 0 0" />
+</joint>
+</xacro:macro>
+
+<xacro:macro name="ear_" params="prefix reflect">
+<link name="${prefix}_ear_link">
+  <visual>
+    <geometry>
+      <box size="${ear_width} ${ear_height} ${ear_thickness}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="${PI/2} 0 ${PI/2}" />
+  </visual>
+  <collision>
+    <geometry>
+      <box size="${ear_width} ${ear_height} ${ear_thickness}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="${PI/2} 0 ${PI/2}" />
+  </collision>
+  <box_inertia_matrix_  m="${mass*0.1}" w="${ear_width}" h="${ear_height}" d="${ear_thickness}"/>
+</link>
+<joint name="${prefix}_ear_joint" type="fixed">
+  <parent link="disk_link" />
+  <child link="${prefix}_ear_link" />
+  <origin xyz="${(disk_radius + ear_thickness/2)*reflect} 0 ${-ear_height/2 + disk_thickness/2}" rpy="0 0 0" />
+  <axis xyz="1 0 0" />
+</joint>
+</xacro:macro>
+      
+<!-- define links -->
+
+<!-- base foot print -->
+<link name="base_footprint">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <box size="0.001 0.001 0.001" />
+    </geometry>
+  </visual>
+  <box_inertia_matrix_ m="${mass*2}" w="0.001" h="0.001" d="0.001" />
+</link>
+
+<gazebo reference="base_footprint">
+  <turnGravityOff>false</turnGravityOff>
+</gazebo>
+
+<!-- Base Link-->
+<link name="base_link">
+  <collision>
+    <geometry>
+      <box size="${width} ${height} ${thickness}" />
+    </geometry>
+  </collision>
+  <visual>
+    <geometry>
+      <box size="${width} ${height} ${thickness}" />
+    </geometry>
+  </visual>
+  <box_inertia_matrix_ m="${mass}" w="${width}" h="${height}" d="${thickness}" />
+</link>
+
+<joint name="base_link_joint" type="fixed">
+  <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0" />        
+  <parent link="base_footprint"/>
+  <child link="base_link" />
+</joint>
+
+<gazebo reference="base_link">
+  <material>Gazebo/Orange</material>
+</gazebo>
+
+<!-- Left Wheel Link -->
+<wheel_ prefix="left" reflect="-1" />
+
+<!-- Right Wheel Link -->
+<wheel_ prefix="right" reflect="1" />
+
+<!-- stick -->
+<link name="stick_link">
+  <collision>
+    <geometry>
+      <box size="${stick_width} ${stick_height} ${stick_thickness}" />
+    </geometry>
+  </collision>
+  <visual>
+    <geometry>
+      <box size="${stick_width} ${stick_height} ${stick_thickness}" />
+    </geometry>
+  </visual>
+  <box_inertia_matrix_ m="${mass/10}" w="${stick_width}" h="${stick_height}" d="${stick_thickness}" />
+</link>
+
+<joint name="stick_link_joint" type="fixed">
+  <origin xyz="0 ${-height/2 - stick_height/2 + thickness} ${thickness}" rpy="0 0 0" />        
+  <parent link="base_link"/>
+  <child link="stick_link" />
+</joint>
+
+<!--  left ear -->
+<ear_ prefix="left" reflect="-1" />
+
+<!--  right ear -->
+<ear_ prefix="right" reflect="1" />
+
+<!-- disk -->
+<link name="disk_link">
+  <visual>
+    <geometry>
+      <cylinder length="${disk_thickness}" radius="${disk_radius}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <material name="blue">
+      <color rgba="0 0 .8 1"/>
+    </material>
+  </visual>
+  <collision>
+    <geometry>
+      <cylinder length="${disk_thickness}" radius="${disk_radius}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </collision>
+  <cylinder_inertial_matrix_  m="${wheel_mass/2}" r="${disk_radius}" h="${disk_thickness}" />
+</link>
+<joint name="disk_link_joint" type="continuous">
+  <parent link="stick_link" />
+  <child link="disk_link" />
+  <origin xyz="0 ${-stick_height/2 + disk_radius} ${-stick_thickness/2 - disk_thickness/2}" rpy="0 0 0" />
+  <axis xyz="0 0 1" />
+</joint>
+<transmission name="disk_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="disk_link_joint">
+    <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="disk_motor">
+    <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission> 
+
+<!-- steer_wheel -->
+<link name="steer_wheel_link">
+  <visual>
+    <geometry>
+      <cylinder length="${wheel_thickness}" radius="${wheel_radius/2}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+    <material name="blue">
+      <color rgba="0 0 .8 1"/>
+    </material>
+  </visual>
+  <collision>
+    <geometry>
+      <cylinder length="${wheel_thickness}" radius="${wheel_radius/2}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+  </collision>
+  <cylinder_inertial_matrix_  m="${wheel_mass/4}" r="${wheel_radius/2}" h="${wheel_thickness}" />
+</link>
+<gazebo reference="steer_wheel_link">
+  <material>Gazebo/Yellow</material>
+</gazebo>
+<joint name="steer_wheel_joint" type="continuous">
+  <parent link="disk_link" />
+  <child link="steer_wheel_link" />
+  <origin xyz="0 0 ${-wheel_radius/2 - disk_thickness/2}" rpy="0 0 0" />
+  <axis xyz="1 0 0" />
+</joint>
+<transmission name="steer_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="steer_wheel_joint">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="steer_motor">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission> 
+
+<!-- gazebo controller plugin: ref: http://gazebosim.org/tutorials/?tut=ros_control-->
+<!-- ref: http://www.theconstructsim.com/ros-qa-126-how-to-configure-the-differential-drive-ros-controller/-->
+<gazebo>
+  <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+    <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+    <legacyModeNS>true</legacyModeNS>
+  </plugin>
+</gazebo> 
+
+</robot>
