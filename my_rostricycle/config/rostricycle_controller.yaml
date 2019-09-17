@@ -68,6 +68,16 @@ agv_ackermann_steering_controller:
       has_jerk_limits        : false
       max_jerk               : 2.5  # rad/s^3
 
+gazebo_ros_control/pid_gains:
+  disk_link_joint:
+    p: 0.01
+    i: 0.0
+    d: 0.0
+  steer_wheel_joint:
+    p: 0.01
+    i: 0.0
+    d: 0.000001
+
 # Publish all joint states -----------------------------------
 #joint_state_controller:
 #  type: joint_state_controller/JointStateController
