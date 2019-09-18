@@ -3,13 +3,13 @@
 
 <!-- define constants -->
 <xacro:property name="PI" value="3.1415926" />
-<xacro:property name="mass" value="1" /> 
-<xacro:property name="wheel_mass" value="0.3" />
-<xacro:property name="width" value="0.2" />
-<xacro:property name="height" value="0.4" />
-<xacro:property name="thickness" value="0.02" />
-<xacro:property name="wheel_thickness" value="0.02" />
-<xacro:property name="wheel_radius" value="0.05" />
+<xacro:property name="mass" value="5" /> 
+<xacro:property name="wheel_mass" value="1.5" />
+<xacro:property name="width" value="1" />
+<xacro:property name="height" value="2" />
+<xacro:property name="thickness" value="0.1" />
+<xacro:property name="wheel_thickness" value="0.1" />
+<xacro:property name="wheel_radius" value="0.25" />
 <xacro:property name="stick_width" value="${(wheel_thickness)*4}" />
 <xacro:property name="stick_height" value="${(wheel_radius)*4}" />
 <xacro:property name="stick_thickness" value="${thickness}" />
@@ -172,6 +172,9 @@
 
 <!--  left ear -->
 <ear_ prefix="left" reflect="-1" />
+<gazebo reference="left_ear_link">
+  <material>Gazebo/Red</material>
+</gazebo>
 
 <!--  right ear -->
 <ear_ prefix="right" reflect="1" />
@@ -237,7 +240,7 @@
 <joint name="steer_wheel_joint" type="continuous">
   <parent link="disk_link" />
   <child link="steer_wheel_link" />
-  <origin xyz="0 0 ${-wheel_radius/2 - disk_thickness/2}" rpy="0 0 0" />
+  <origin xyz="0 0 ${-wheel_radius/2 - disk_thickness/2 - disk_thickness/2}" rpy="0 0 0" />
   <axis xyz="1 0 0" />
 </joint>
 <transmission name="steer_tran">

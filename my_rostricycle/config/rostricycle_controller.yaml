@@ -14,8 +14,8 @@ agv_ackermann_steering_controller:
   # Wheel separation and diameter. These are both optional.
   # diff_drive_controller will attempt to read either one or both from the
   # URDF if not specified as a parameter
-  wheel_separation_h : 0.25 # meters 
-  wheel_radius : 0.025    # meters
+  wheel_separation_h : 1.25 # meters 
+  wheel_radius : 0.125    # meters
   
    # Wheel separation and radius multipliers
   wheel_separation_h_multiplier: 1.0 # default: 1.0
@@ -70,13 +70,13 @@ agv_ackermann_steering_controller:
 
 gazebo_ros_control/pid_gains:
   disk_link_joint:
-    p: 0.01
+    p: 1.0
     i: 0.0
     d: 0.0
   steer_wheel_joint:
-    p: 0.01
+    p: 0.1
     i: 0.0
-    d: 0.000001
+    d: 0.0
 
 # Publish all joint states -----------------------------------
 #joint_state_controller:
