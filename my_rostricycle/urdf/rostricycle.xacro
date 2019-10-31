@@ -254,6 +254,32 @@
   </actuator>
 </transmission> 
 
+<!-- steer_wheel_mark -->
+<link name="steer_wheel_mark_link">
+  <visual>
+    <geometry>
+      <cylinder length="0.01" radius="0.01" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+    <material name="white">
+      <color rgba=".8 .8 .8 1"/>
+    </material>
+  </visual>
+  <collision>
+    <geometry>
+      <cylinder length="0.01" radius="0.01" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
+  </collision>
+</link>
+<joint name="steer_wheel_mark_joint" type="fixed">
+  <parent link="steer_wheel_link" />
+  <child link="steer_wheel_mark_link" />
+  <origin xyz="${wheel_thickness/2+0.005} 0  ${wheel_radius/2-0.01}" rpy="0 0 0" />
+  <axis xyz="1 0 0" />
+</joint>
+
+
 <!-- gazebo controller plugin: ref: http://gazebosim.org/tutorials/?tut=ros_control-->
 <!-- ref: http://www.theconstructsim.com/ros-qa-126-how-to-configure-the-differential-drive-ros-controller/-->
 <gazebo>
