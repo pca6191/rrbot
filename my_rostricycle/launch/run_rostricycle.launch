@@ -1,0 +1,37 @@
+<launch>
+  
+  <!-- 讀入關節控制的設定檔，並載入到 parameter server -->
+    <rosparam file="$(find my_rostricycle)/config/rostricycle_controller.yaml" command="load"/>
+
+  <!-- 帶入 agv 外觀模型描述檔，關聯到 ROS 參數 robot_description -->
+    <param name="robot_description"
+      command="$(find xacro)/xacro --inorder '$(find my_rostricycle)/urdf/rostricycle.xacro'" />
+
+  <!-- 掛入自製的控制器給 controller manager 管理 -->
+    <node name="tricycle_control" pkg="my_rostricycle" type="tricycle_control" output="screen">
+      <!-- remap from="agv_controller/cmd_vel" to="cmd_vel"/ -->
+      <!-- remap from="agv_controller/odom" to="odom"/ -->
+    </node>
+    <param name="period" type="double" value="0.05" />
+    <param name="port_1" type="string" value="/dev/ttyUSB0" />
+    <param name="baud" type="int" value="115200" />
+    <param name="timeout" type="int" value="250" />
+    <param name="bytesize" type="int" value="8" />
+    <param name="parity" type="int" value="2" />
+  
+  <!-- 依照阿克曼 .yaml 設定的控制器 -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+	    output="screen" args="agv_robot_joint_publisher agv_ackermann_steering_controller"/> 
+
+  <!-- 帶起關節狀態發報器 -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" 
+        type="robot_state_publisher" respawn="false" output="screen">
+    </node>
+
+  <!-- using teleop_twist_keyboard -->
+  <!-- maybe need to: $ sudo apt install ros-kinetic-teleop-twist-keyboard -->
+    <!--
+    <remap from="/cmd_vel" to="/rostricycle_controller/cmd_vel"/>
+    <node name="teleop" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" output="screen" />
+    -->
+</launch>

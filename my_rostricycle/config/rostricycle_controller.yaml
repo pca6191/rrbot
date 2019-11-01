@@ -9,8 +9,8 @@ agv_ackermann_steering_controller:
   publish_rate: 50
   pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
   twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
-  front_steer: 'disk_link_joint'
-  front_wheel: 'steer_wheel_joint'
+  front_steer: 'front_steering_joint'
+  front_wheel: 'front_wheel_joint'
   # Wheel separation and diameter. These are both optional.
   # diff_drive_controller will attempt to read either one or both from the
   # URDF if not specified as a parameter

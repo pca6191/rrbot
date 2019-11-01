@@ -13,10 +13,10 @@
 <xacro:property name="stick_width" value="${(wheel_thickness)*4}" />
 <xacro:property name="stick_height" value="${(wheel_radius)*4}" />
 <xacro:property name="stick_thickness" value="${thickness}" />
-<xacro:property name="disk_radius" value="${(stick_width - thickness*2)/2}" />
-<xacro:property name="disk_thickness" value="${thickness/2}" />
-<xacro:property name="ear_width" value="${disk_radius}" />
-<xacro:property name="ear_height" value="${disk_radius*2}" />
+<xacro:property name="steer_radius" value="${(stick_width - thickness*2)/2}" />
+<xacro:property name="steer_thickness" value="${thickness/2}" />
+<xacro:property name="ear_width" value="${steer_radius}" />
+<xacro:property name="ear_height" value="${steer_radius*2}" />
 <xacro:property name="ear_thickness" value="${thickness/2}" />
 
 <!-- define macros -->
@@ -94,9 +94,9 @@
   <box_inertia_matrix_  m="${mass*0.1}" w="${ear_width}" h="${ear_height}" d="${ear_thickness}"/>
 </link>
 <joint name="${prefix}_ear_joint" type="fixed">
-  <parent link="disk_link" />
+  <parent link="front_steering_link" />
   <child link="${prefix}_ear_link" />
-  <origin xyz="${(disk_radius + ear_thickness/2)*reflect} 0 ${-ear_height/2 + disk_thickness/2}" rpy="0 0 0" />
+  <origin xyz="${(steer_radius + ear_thickness/2)*reflect} 0 ${-ear_height/2 + steer_thickness/2}" rpy="0 0 0" />
   <axis xyz="1 0 0" />
 </joint>
 </xacro:macro>
@@ -179,11 +179,11 @@
 <!--  right ear -->
 <ear_ prefix="right" reflect="1" />
 
-<!-- disk -->
-<link name="disk_link">
+<!-- front steer -->
+<link name="front_steering_link">
   <visual>
     <geometry>
-      <cylinder length="${disk_thickness}" radius="${disk_radius}" />
+      <cylinder length="${steer_thickness}" radius="${steer_radius}" />
     </geometry>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <material name="blue">
@@ -192,31 +192,31 @@
   </visual>
   <collision>
     <geometry>
-      <cylinder length="${disk_thickness}" radius="${disk_radius}" />
+      <cylinder length="${steer_thickness}" radius="${steer_radius}" />
     </geometry>
     <origin xyz="0 0 0" rpy="0 0 0" />
   </collision>
-  <cylinder_inertial_matrix_  m="${wheel_mass/2}" r="${disk_radius}" h="${disk_thickness}" />
+  <cylinder_inertial_matrix_  m="${wheel_mass/2}" r="${steer_radius}" h="${steer_thickness}" />
 </link>
-<joint name="disk_link_joint" type="continuous">
+<joint name="front_steering_joint" type="continuous">
   <parent link="stick_link" />
-  <child link="disk_link" />
-  <origin xyz="0 ${-stick_height/2 + disk_radius} ${-stick_thickness/2 - disk_thickness/2}" rpy="0 0 0" />
+  <child link="front_steering_link" />
+  <origin xyz="0 ${-stick_height/2 + steer_radius} ${-stick_thickness/2 - steer_thickness/2}" rpy="0 0 0" />
   <axis xyz="0 0 1" />
 </joint>
-<transmission name="disk_tran">
+<transmission name="front_steering_tran">
   <type>transmission_interface/SimpleTransmission</type>
-  <joint name="disk_link_joint">
+  <joint name="front_steering_joint">
     <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
   </joint>
-  <actuator name="disk_motor">
+  <actuator name="front_steering_motor">
     <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     <mechanicalReduction>1</mechanicalReduction>
   </actuator>
 </transmission> 
 
-<!-- steer_wheel -->
-<link name="steer_wheel_link">
+<!-- front wheel -->
+<link name="front_wheel_link">
   <visual>
     <geometry>
       <cylinder length="${wheel_thickness}" radius="${wheel_radius/2}" />
@@ -234,28 +234,28 @@
   </collision>
   <cylinder_inertial_matrix_  m="${wheel_mass/4}" r="${wheel_radius/2}" h="${wheel_thickness}" />
 </link>
-<gazebo reference="steer_wheel_link">
+<gazebo reference="front_wheel_link">
   <material>Gazebo/Yellow</material>
 </gazebo>
-<joint name="steer_wheel_joint" type="continuous">
-  <parent link="disk_link" />
-  <child link="steer_wheel_link" />
-  <origin xyz="0 0 ${-wheel_radius/2 - disk_thickness/2 - disk_thickness/2}" rpy="0 0 0" />
+<joint name="front_wheel_joint" type="continuous">
+  <parent link="front_steering_link" />
+  <child link="front_wheel_link" />
+  <origin xyz="0 0 ${-wheel_radius/2 - steer_thickness/2 - steer_thickness/2}" rpy="0 0 0" />
   <axis xyz="1 0 0" />
 </joint>
-<transmission name="steer_tran">
+<transmission name="front_wheel_tran">
   <type>transmission_interface/SimpleTransmission</type>
-  <joint name="steer_wheel_joint">
+  <joint name="front_wheel_joint">
     <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
   </joint>
-  <actuator name="steer_motor">
+  <actuator name="front_wheel_motor">
     <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
     <mechanicalReduction>1</mechanicalReduction>
   </actuator>
 </transmission> 
 
-<!-- steer_wheel_mark -->
-<link name="steer_wheel_mark_link">
+<!-- front_wheel_mark -->
+<link name="front_wheel_mark_link">
   <visual>
     <geometry>
       <cylinder length="0.01" radius="0.01" />
@@ -272,9 +272,9 @@
     <origin xyz="0 0 0" rpy="0 ${PI/2} 0" />
   </collision>
 </link>
-<joint name="steer_wheel_mark_joint" type="fixed">
-  <parent link="steer_wheel_link" />
-  <child link="steer_wheel_mark_link" />
+<joint name="front_wheel_mark_joint" type="fixed">
+  <parent link="front_wheel_link" />
+  <child link="front_wheel_mark_link" />
   <origin xyz="${wheel_thickness/2+0.005} 0  ${wheel_radius/2-0.01}" rpy="0 0 0" />
   <axis xyz="1 0 0" />
 </joint>
