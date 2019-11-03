@@ -37,8 +37,8 @@
  * Author: Masaru Morita
  */
 
-#define STEER_VELOCITY_DRIVE 1
-//#define STEER_POSITION_DRIVE 1
+//#define STEER_VELOCITY_DRIVE 1
+#define STEER_POSITION_DRIVE 1
 
 #include "agv_ackermann_steering_controller/agv_ackermann_steering_controller.h"
 

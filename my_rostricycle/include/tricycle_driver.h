@@ -108,8 +108,8 @@ private:
   double eff_[TricycleDriver::num_of_joint_];
 
   #if tcdbg
-  FakeMotor front_steer;
-  FakeMotor front_wheel;
+  FakeMotor front_steer_;
+  FakeMotor front_wheel_;
   #endif
 };
 
