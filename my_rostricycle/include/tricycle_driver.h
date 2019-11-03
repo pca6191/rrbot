@@ -19,51 +19,12 @@
 #include <hardware_interface/robot_hw.h>
 #include <std_msgs/Float64.h>
 
+#if tcdbg
+#include <fake_motor.h>
+#endif
+
 namespace agv
 {
-class FakeMotor {
-public:
-  using uptr = std::unique_ptr<FakeMotor>;
-
-  static uptr create_instance()
-  {
-    return std::make_unique<FakeMotor>();
-  }
-
-  FakeMotor()
-  { }
-
-  void set_vel(double vel)
-  {
-    vel_ = vel;
-  }
-
-  double get_vel() 
-  {
-    return vel_;
-  }
-
-  void set_pos(double pos)
-  {
-    pos_ = pos;
-  }
-
-  double get_pos()
-  {
-    return pos_;
-  }
- 
-  // 上次 update 到這次，經過 dt
-  void update(double dt)
-  {
-    pos_ += vel_*dt;
-  }
-
-private:
-  double vel_ = 0.0;
-  double pos_ = 0.0;
-};
-
 /*
  * @file  繼承 RobotHW 介面，實做 velocity() / position()，對硬體溝通、控制。
  */
