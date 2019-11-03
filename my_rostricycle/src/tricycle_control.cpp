@@ -7,7 +7,6 @@
 #include <tricycle_driver.h>
 #include <ros/ros.h>
 #include <controller_manager/controller_manager.h>
-// #include <package_info.h>
 
 int main(int argc, char *argv[])
 {

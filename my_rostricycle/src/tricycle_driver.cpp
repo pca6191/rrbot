@@ -4,14 +4,10 @@
  *  Created on: 2019年10月31日
  *      Author: kc.chang
  */
-#include <tricycle_driver.h>
-// #include <cstdlib>
-// #include <iostream>  // for debug
 
 #include <controller_manager/controller_manager.h>
-// #include <agv_utility.h>
 
-#define dbg 1
+#include <tricycle_driver.h>
 
 namespace agv
 {
@@ -19,7 +15,7 @@ namespace agv
  * @brief  建構函式，註冊自製的控制器到 ROS 框架中，以便 ROS 可以管理。
  */
 TricycleDriver::TricycleDriver(const std::string &port_1, const int baud,
-      const int timeout, const int bytesize, const int parity) 
+      const int timeout, const int bytesize, const int parity)
 {
   (void)port_1;
   (void)baud;
@@ -65,9 +61,9 @@ TricycleDriver::TricycleDriver(const std::string &port_1, const int baud,
   registerInterface(&joint_pos_interface_);
   registerInterface(&joint_vel_interface_);
 
-#if dbg
+  #if tcdbg
   ROS_INFO_STREAM(">>>> start tricycle_driver ok !");
-#endif
+  #endif
 }
 
 TricycleDriver::~TricycleDriver()
@@ -86,7 +82,7 @@ TricycleDriver::~TricycleDriver()
  */
 void TricycleDriver::write()
 {
-#if dbg
+#if tcdbg
   ROS_INFO_STREAM_ONCE(">>>> TricycleDriver::write() once !");
 #endif
 
@@ -100,7 +96,7 @@ void TricycleDriver::write()
  */
 void TricycleDriver::read(const ros::Duration period)
 {
-#if dbg
+#if tcdbg
   ROS_INFO_STREAM_ONCE(">>>> TricycleDriver::read() once !");
 #endif
   // 將關節 steer/wheel 的速度、位置，更新到 vel_[]/pos_[]

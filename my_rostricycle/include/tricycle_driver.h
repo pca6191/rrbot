@@ -7,22 +7,62 @@
 #ifndef TRICYCLE_DRIVER_H_
 #define TRICYCLE_DRIVER_H_
 
+#define tcdbg 1
+
 #include <string>
 #include <vector>
-//#include <thread>
 
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
-#include <std_msgs/Int32.h>
-#include <std_msgs/Float32.h>
-
-// #include <agv_modbus.h>
+#include <std_msgs/Float64.h>
 
 namespace agv
 {
+class FakeMotor {
+public:
+  using uptr = std::unique_ptr<FakeMotor>;
+
+  static uptr create_instance()
+  {
+    return std::make_unique<FakeMotor>();
+  }
+
+  FakeMotor()
+  { }
+
+  void set_vel(double vel)
+  {
+    vel_ = vel;
+  }
+
+  double get_vel() 
+  {
+    return vel_;
+  }
+
+  void set_pos(double pos)
+  {
+    pos_ = pos;
+  }
+
+  double get_pos()
+  {
+    return pos_;
+  }
+ 
+  // 上次 update 到這次，經過 dt
+  void update(double dt)
+  {
+    pos_ += vel_*dt;
+  }
+
+private:
+  double vel_ = 0.0;
+  double pos_ = 0.0;
+};
 
 /*
  * @file  繼承 RobotHW 介面，實做 velocity() / position()，對硬體溝通、控制。
@@ -41,16 +81,8 @@ public:
   bool stop();
 
 private:
-  
-  #if 0
-  enum class MotorID {
-    // 馬達編號
-    LEFT_ID = 1,
-    RIGHT_ID = 2,
-  };
-  #endif
-  
-  // canbud 最基本通訊函式
+   
+  // canbus 最基本通訊函式
   bool send_command(const uint16_t id, const uint16_t cmd);
 
   // 本 driver 與 control manager 對接的出入口
@@ -74,7 +106,13 @@ private:
   double pos_[TricycleDriver::num_of_joint_];
   double vel_[TricycleDriver::num_of_joint_];
   double eff_[TricycleDriver::num_of_joint_];
+
+  #if tcdbg
+  FakeMotor front_steer;
+  FakeMotor front_wheel;
+  #endif
 };
+
 
 }  // namespace agv
 #endif  // TRICYCLE_DRIVER_H_
