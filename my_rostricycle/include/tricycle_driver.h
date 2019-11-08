@@ -8,6 +8,7 @@
 #define TRICYCLE_DRIVER_H_
 
 #define tcdbg 1
+#define USECAN 1
 
 #include <string>
 #include <vector>
@@ -37,6 +38,10 @@ public:
 
   void read(const ros::Duration);
   void write();
+
+#if USECAN
+  void write_2nd();
+#endif
 
   bool start();
   bool stop();

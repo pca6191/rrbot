@@ -9,6 +9,17 @@
 
 #include <tricycle_driver.h>
 
+#if USECAN
+#include <socketcan_cpp.h>
+
+namespace {
+bool is_can_ok = false;
+scpp::SocketCan sockat_can;
+double last_cmd[2];  // 用來送第二次
+}  // namespace
+
+#endif
+
 namespace agv
 {
 /*
@@ -64,6 +75,13 @@ TricycleDriver::TricycleDriver(const std::string &port_1, const int baud,
   #if tcdbg
   ROS_INFO_STREAM(">>>> start tricycle_driver ok !");
   #endif
+
+#if USECAN
+  // init canbus and autobox
+  if (sockat_can.open("can0") == scpp::STATUS_OK) {
+    is_can_ok = true;
+  }
+#endif
 }
 
 TricycleDriver::~TricycleDriver()
@@ -86,15 +104,72 @@ void TricycleDriver::write()
   ROS_INFO_STREAM_ONCE(">>> TricycleDriver::write() once !");
 #endif
 
+#if USECAN
+  if(!is_can_ok) {
+    return;
+  }
+
+  // 將 cmd_[] 適度轉換成為 canbus 封包
+  scpp::CanFrame cf_to_write;  //can frame to write
+  cf_to_write.id = 123;
+  cf_to_write.len = 8;
+  cf_to_write.data[0] = 0x00;
+  cf_to_write.data[1] = 0x01;
+  cf_to_write.data[2] = 0x02;
+  cf_to_write.data[3] = 0x03;
+  cf_to_write.data[4] = 0x04;
+  cf_to_write.data[5] = 0x05;
+  cf_to_write.data[6] = 0x06;
+  cf_to_write.data[7] = 0x07;
+
+  auto write_sc_status = sockat_can.write(cf_to_write);
+  last_cmd[0] = cmd_[0];
+  last_cmd[1] = cmd_[1];
+  if (write_sc_status != scpp::STATUS_OK) {
+    ROS_ERROR_STREAM_ONCE("something went wrong on socket write, error code : " << int32_t(write_sc_status));
+  }
+  else {
+    //ROS_INFO_STREAM("Message was written to the socket \n");
+  }
+#else
   // 將 cmd_[STEER], cmd_[WHEEL] 代表的物理量，換算成 canbus 指令，並送出
   front_steer_.set_pos(cmd_[steer_index_]);  // 單位應為徑度
   front_wheel_.set_vel(cmd_[wheel_index_]);   // 單位應為 rad/s
+#endif
 
 #if tcdbg
   ROS_INFO_STREAM_THROTTLE(1, ">> write:steer cmd_:" << cmd_[steer_index_]);
   ROS_INFO_STREAM_THROTTLE(1, ">> write:wheel cmd_:" << cmd_[wheel_index_]);
 #endif
 }
+
+#if USECAN
+void TricycleDriver::write_2nd()
+{
+  // 將 last_cmd[] 送第二次
+  // 將 last_cmd[] 適度轉換成為 canbus 封包
+  scpp::CanFrame cf_to_write;  //can frame to write
+  cf_to_write.id = 123;
+  cf_to_write.len = 8;
+  cf_to_write.data[0] = 0x00;
+  cf_to_write.data[1] = 0x11;
+  cf_to_write.data[2] = 0x12;
+  cf_to_write.data[3] = 0x13;
+  cf_to_write.data[4] = 0x14;
+  cf_to_write.data[5] = 0x15;
+  cf_to_write.data[6] = 0x16;
+  cf_to_write.data[7] = 0x17;
+
+  auto write_sc_status = sockat_can.write(cf_to_write);
+  if (write_sc_status != scpp::STATUS_OK) {
+    ROS_ERROR_STREAM_ONCE("something went wrong on socket write_2nd, error code :"
+        << int32_t(write_sc_status));
+  }
+  else {
+    //ROS_INFO_STREAM("Message was written to the socket \n");
+  }
+}
+#endif
 
 /*
  * @brief  計算 odometry ，並寫入到 ROS 上層
@@ -105,11 +180,34 @@ void TricycleDriver::read(const ros::Duration period)
 #if tcdbg
   ROS_INFO_STREAM_ONCE(">>> TricycleDriver::read() once !");
 #endif
+
+#if USECAN
+  if(!is_can_ok) {
+    return;
+  }
+
+  scpp::CanFrame fr;
+  bool is_timeout = true;
+  while (sockat_can.read(fr) == scpp::STATUS_OK) {
+//    printf("len %d byte, id: %d, data: %02x %02x %02x %02x %02x %02x %02x %02x  \n", fr.len, fr.id,
+//        fr.data[0], fr.data[1], fr.data[2], fr.data[3], fr.data[4], fr.data[5], fr.data[6],
+//        fr.data[7]);
+
+    // 加上 timeout, 跳脫 while
+    is_timeout = false;
+  }
+
+  if(!is_timeout) {
+    // 解讀 frame 封包內容
+  }
+
+#else
   // 將關節 steer/wheel 的速度、位置，更新到 vel_[]/pos_[]
   pos_[steer_index_] = front_steer_.get_pos();
 
   vel_[wheel_index_] = front_wheel_.get_vel();
   pos_[wheel_index_] = front_wheel_.get_vel();
+#endif
 
 #if tcdbg
   ROS_INFO_STREAM_THROTTLE(1, ">>> read:steer pos_:" << pos_[steer_index_]);
@@ -124,6 +222,10 @@ void TricycleDriver::read(const ros::Duration period)
 */
 bool TricycleDriver::start()
 {
+#if USECAN  //ENTER / MODE
+
+#endif
+
   return true;
 }
 
@@ -133,6 +235,10 @@ bool TricycleDriver::start()
 */
 bool TricycleDriver::stop()
 {
+#if USECAN
+  // EXIT mode
+
+#endif
   return true;
 }
 

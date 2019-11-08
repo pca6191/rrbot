@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.5.1-0-g916b5db  Build Version: 1.5.7152.31018
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="l14_v3_center">
+
+
+
+
+
+
+
+    <link name="base_footprint">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.001 0.001 0.001"/>
+        </geometry>
+      </visual>
+    </link>     
+    <gazebo reference="base_footprint">
+      <turnGravityOff>false</turnGravityOff>
+    </gazebo>
+
+    <joint name="base_footprint_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>        
+      <parent link="base_footprint"/>
+      <child link="base_link"/>
+    </joint>
+
+
+
+
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.99389 1.4427E-16 0.60839"
+        rpy="0 0 0" />
+      <mass
+        value="755.97" />
+      <inertia
+        ixx="188"
+        ixy="-1.2732E-13"
+        ixz="-18.348"
+        iyy="184.3"
+        iyz="2.5221E-14"
+        izz="107.31" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.52941 0.54902 0.54902 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="rear_right_caster">
+    <inertial>
+      <origin
+        xyz="8.2836E-19 1.7347E-18 -0.0325"
+        rpy="0 0 0" />
+      <mass
+        value="0.39466" />
+      <inertia
+        ixx="0.00031717"
+        ixy="4.537E-37"
+        ixz="-2.908E-36"
+        iyy="0.00031717"
+        iyz="-1.7702E-21"
+        izz="0.00035643" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/rear_right_caster.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 0.32" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/rear_right_caster.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="rear_right_caster_joint"
+    type="continuous">
+    <origin
+      xyz="0 -0.2175 0"
+      rpy="1.5707963267949 0 3.14159265358979" />
+    <parent
+      link="base_link" />
+    <child
+      link="rear_right_caster" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="rear_left_caster">
+    <inertial>
+      <origin
+        xyz="8.2836E-19 1.7347E-18 0.0325"
+        rpy="0 0 0" />
+      <mass
+        value="0.39466" />
+      <inertia
+        ixx="0.00031717"
+        ixy="4.537E-37"
+        ixz="-2.908E-36"
+        iyy="0.00031717"
+        iyz="-1.7702E-21"
+        izz="0.00035643" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/rear_left_caster.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 0.32" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/rear_left_caster.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="rear_left_caster_joint"
+    type="continuous">
+    <origin
+      xyz="0 0.2175 0"
+      rpy="1.5707963267949 0 3.14159265358979" />
+    <parent
+      link="base_link" />
+    <child
+      link="rear_left_caster" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="front_steering">
+    <inertial>
+      <origin
+        xyz="-8.0624E-09 1.6465E-08 -0.014515"
+        rpy="0 0 0" />
+      <mass
+        value="9.8889" />
+      <inertia
+        ixx="0.071104"
+        ixy="3.0027E-09"
+        ixz="8.8397E-10"
+        iyy="0.063856"
+        iyz="-3.0489E-08"
+        izz="0.12133" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/front_steering.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.52941 0.54902 0.54902 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/front_steering.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+
+  <joint
+    name="front_steering_joint"
+    type="continuous">
+    <origin
+      xyz="1.5 0 0.0725"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="front_steering" />
+    <axis
+      xyz="0 0 1" />
+    <anchor xyz="0 0 0"/>
+    <limit effort="100" velocity="100" k_velocity="0"/>
+    <joint_properties damping="0.0" friction="0.0"/>
+  </joint>
+
+
+
+  <link
+    name="front_wheel">
+    <inertial>
+      <origin
+        xyz="0 -1.3878E-17 2.5851E-18"
+        rpy="0 0 0" />
+      <mass
+        value="3.8127" />
+      <inertia
+        ixx="0.014867"
+        ixy="1.9716E-21"
+        ixz="1.0975E-19"
+        iyy="0.015601"
+        iyz="-1.4161E-20"
+        izz="0.025672" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/front_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 0.32" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/front_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+
+  <joint
+    name="front_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="0 0 0"
+      rpy="-1.5707963267949 0 0" />
+    <parent
+      link="front_steering" />
+    <child
+      link="front_wheel" />
+    <axis
+      xyz="0 0 1" />
+    <anchor xyz="0 0 0"/>
+    <limit effort="100" velocity="100" k_velocity="0"/>
+    <joint_properties damping="0.0" friction="0.0"/>
+  </joint>
+
+
+  <link
+    name="fork">
+    <inertial>
+      <origin
+        xyz="0.44631 -6.7419E-17 0.11903"
+        rpy="0 0 0" />
+      <mass
+        value="151.88" />
+      <inertia
+        ixx="13.737"
+        ixy="-7.6481E-15"
+        ixz="-3.8949"
+        iyy="24.786"
+        iyz="-1.2123E-15"
+        izz="32.781" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/fork.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.65098 0.61961 0.58824 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/fork.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+
+  <joint
+    name="fork_joint"
+    type="prismatic">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="fork" />
+    <axis
+      xyz="0 0 1" />
+    <anchor xyz="0 0 0"/>
+    <limit effort="100" lower="0.0" upper="2.0" velocity="0.5"/>
+  </joint>
+
+
+  <link
+    name="battery">
+    <inertial>
+      <origin
+        xyz="0 0 0.325"
+        rpy="0 0 0" />
+      <mass
+        value="275.18" />
+      <inertia
+        ixx="20.925"
+        ixy="1.8134E-16"
+        ixz="4.4816E-16"
+        iyy="11.361"
+        iyz="-7.5643E-16"
+        izz="12.908" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/battery.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.29804 0.29804 0.29804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://l14_v3_center/meshes/battery.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="battery_joint"
+    type="fixed">
+    <origin
+      xyz="1.102 0 0.0375"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="battery" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+
+
+
+
+
+
+
+
+  <transmission name="fork_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="fork_joint">
+      <!--hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface-->
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="fork_actuator">
+      <!--hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface-->
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="front_steering_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="front_steering_joint" >
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="front_steering_actuator">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="front_wheel_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="front_wheel_joint" >
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="front_wheel_actuator">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+
+   <gazebo>
+      <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+        <legacyModeNS>true</legacyModeNS>
+      </plugin>
+    </gazebo>
+
+
+
+    <gazebo reference="base_link">
+      <material>Gazebo/Red</material>
+    </gazebo>
+
+    <gazebo reference="fork">
+      <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="rear_right_caster">
+      <material>Gazebo/Yellow</material>
+    </gazebo>
+
+    <gazebo reference="rear_left_caster">
+      <material>Gazebo/Yellow</material>
+    </gazebo>
+
+    <gazebo reference="front_steering">
+      <material>Gazebo/Green</material>
+    </gazebo>
+
+    <gazebo reference="front_wheel">
+      <material>Gazebo/Blue</material>
+    </gazebo>
+
+
+
+
+</robot>

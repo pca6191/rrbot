@@ -1,0 +1,53 @@
+<launch>
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+
+    <!-- 帶起 gazebo 套件自帶的 empty world 視覺環境 -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="debug" value="$(arg debug)" />
+        <arg name="gui" value="$(arg gui)" />
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+        <arg name="headless" value="$(arg headless)"/>
+    </include>
+
+     <arg name="robot_position" value="-x 0.0 -y -0.0 -z 0.0425 -R 0 -P 0 -Y 0" />
+
+    <!-- 帶入 agv 外觀模型描述檔，關聯到 ROS 參數 robot_description -->
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find l14_v3_center)/urdf/l14_v3_center.urdf'" />
+
+    <!-- 運作 joint_state_publisher node，發布關節狀態 -->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node> 
+    
+    <!-- 運作 robot_state_publisher node，發布 tf -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" >
+        <param name="publish_frequency" type="double" value="50.0" />
+        <param name="tf_prefix" type="string" value=""/>
+    </node>
+
+    <!-- Load controller configuration -->
+    <rosparam command="load" file="$(find agv_control)/config/agv_ackermann_steering_controller_for_forklift.yaml" />
+    <rosparam command="load" file="$(find agv_control)/config/agv_forklift_control.yaml"/>
+
+    <!-- Spawn controllers -->
+    <node name="base_controller_spawner" pkg="controller_manager" type="spawner"
+      args="agv_robot_joint_publisher agv_ackermann_steering_controller"
+      output="screen" >
+    </node>
+
+    <node name="fork_controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+        output="screen" args="joint_state_controller 
+        joint1_position_controller" >
+    </node>
+
+    <!-- 載入機器人模型到 gazebo 環境內，參數詳見 $rosrun gazebo_ros spawn_model -h -->
+    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -model l14_v3_center -param robot_description $(arg robot_position)"/>
+
+    <!-- using teleop_twist_keyboard -->
+    <!-- maybe need to: $ sudo apt install ros-kinetic-teleop-twist-keyboard -->
+    <remap from="/cmd_vel" to="/agv_ackermann_steering_controller/cmd_vel"/>
+    <node name="teleop" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" output="screen" />
+</launch>
