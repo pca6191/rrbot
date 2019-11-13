@@ -58,16 +58,14 @@ private:
 
   const std::string steer_joint_name_ = "front_steering_joint";
   const std::string wheel_joint_name_ = "front_wheel_joint";
+  const std::string fork_joint_name_ = "fork_joint";
 
   // 與 ROS control manager 對傳資料的變數
-  constexpr static uint8_t num_of_joint_ = 2;
+  constexpr static uint8_t num_of_joint_ = 3;
   constexpr static int steer_index_ = 0;  // 陣列索引位置
   constexpr static int wheel_index_ = 1;  // 陣列索引位置
-  enum class JointIndex {
-    // 關節編號
-    STEER = 1,
-    WHEEL = 2,
-  };
+  constexpr static int fork_index_ = 2;  // 陣列索引位置
+
   double cmd_[TricycleDriver::num_of_joint_];
   double pos_[TricycleDriver::num_of_joint_];
   double vel_[TricycleDriver::num_of_joint_];

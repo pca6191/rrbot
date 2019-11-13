@@ -279,6 +279,45 @@
   <axis xyz="1 0 0" />
 </joint>
 
+<!-- fork -->
+<link name="fork_link">
+  <visual>
+    <geometry>
+      <box size="${width/4} ${height/3} ${thickness}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <material name="white">
+      <color rgba="0.8 0.8 0.8 1"/>
+    </material>
+  </visual>
+  <collision>
+    <geometry>
+      <box size="${width/4} ${height/3} ${thickness}" />
+    </geometry>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </collision>
+  <box_inertia_matrix_  m="${mass*0.1}" w="${width/4}" h="${height/3}" d="${thickness}"/>
+</link>
+<joint name="fork_joint" type="prismatic">
+  <parent link="stick_link" />
+  <child link="fork_link" />
+  <limit effort="100.0" velocity="0.1" lower="0.0" upper="2.0"/>
+  <origin xyz=" 0 0 ${thickness}" rpy="0 0 0" />
+  <axis xyz="0 0 1" />
+</joint>
+
+<transmission name="fork_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="fork_joint">
+      <!--hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface-->
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="fork_actuator">
+      <!--hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface-->
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+</transmission>
 
 <!-- gazebo controller plugin: ref: http://gazebosim.org/tutorials/?tut=ros_control-->
 <!-- ref: http://www.theconstructsim.com/ros-qa-126-how-to-configure-the-differential-drive-ros-controller/-->

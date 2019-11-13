@@ -74,7 +74,7 @@
   <material>Gazebo/Black</material>
 </gazebo>
 
-<joint name="joint1" type="prismatic"> 
+<joint name="fork_joint" type="prismatic"> 
   <parent link="base_link" />
   <child link="link2" />
   <limit effort="100" velocity="0.2" lower="-1.0" upper="1.0" />
@@ -85,7 +85,7 @@
 
 <transmission name="tran1">
   <type>transmission_interface/SimpleTransmission</type>
-  <joint name="joint1">
+  <joint name="fork_joint">
     <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
   </joint>
   <actuator name="motor1">

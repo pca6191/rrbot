@@ -5,7 +5,9 @@ slider:
     publish_rate: 50  
   
   # Position Controllers ---------------------------------------
-  joint1_position_controller:
+  fork_position_controller:
     type: velocity_controllers/JointPositionController
-    joint: joint1
+    joint: fork_joint
     pid: {p: 100.0, i: 0.01, d: 10.0}
+    
+    

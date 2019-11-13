@@ -35,17 +35,12 @@ TricycleDriver::TricycleDriver(const std::string &port_1, const int baud,
   (void)parity;
 
   // 初始化媒介變數
-  pos_[steer_index_] = 0.0;
-  pos_[wheel_index_] = 0.0;
-
-  vel_[steer_index_] = 0.0;
-  vel_[wheel_index_] = 0.0;
-
-  eff_[steer_index_] = 0.0;
-  eff_[wheel_index_] = 0.0;
-
-  cmd_[steer_index_] = 0.0;
-  cmd_[wheel_index_] = 0.0;
+  for (int i = 0 ; i < num_of_joint_; i++) {
+    pos_[i] = 0.0;
+    vel_[i] = 0.0;
+    eff_[i] = 0.0;
+    cmd_[i] = 0.0;
+  }
 
   // 連結舵關節 & 媒介變數：狀態發報用
   hardware_interface::JointStateHandle state_handle_steer(steer_joint_name_, &pos_[steer_index_], &vel_[steer_index_],
@@ -55,6 +50,10 @@ TricycleDriver::TricycleDriver(const std::string &port_1, const int baud,
   hardware_interface::JointStateHandle state_handle_wheel(wheel_joint_name_, &pos_[wheel_index_], &vel_[wheel_index_],
       &eff_[wheel_index_]);
   joint_state_interface_.registerHandle(state_handle_wheel);
+  
+  hardware_interface::JointStateHandle state_handle_fork(fork_joint_name_, &pos_[fork_index_], &vel_[fork_index_],
+      &eff_[fork_index_]);
+  joint_state_interface_.registerHandle(state_handle_fork);
 
   //註冊到 ROS 框架
   registerInterface(&joint_state_interface_);
@@ -67,6 +66,10 @@ TricycleDriver::TricycleDriver(const std::string &port_1, const int baud,
   hardware_interface::JointHandle vel_handle(
       joint_state_interface_.getHandle(wheel_joint_name_), &cmd_[wheel_index_]);
   joint_vel_interface_.registerHandle(vel_handle);
+  
+  hardware_interface::JointHandle vel_handle_fork(
+      joint_state_interface_.getHandle(fork_joint_name_), &cmd_[fork_index_]);
+  joint_vel_interface_.registerHandle(vel_handle_fork);  // 一個 vel interface 可以收容多個關節 handle
 
   //註冊到 ROS 框架
   registerInterface(&joint_pos_interface_);

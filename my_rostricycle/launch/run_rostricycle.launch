@@ -8,9 +8,7 @@
       command="$(find xacro)/xacro --inorder '$(find my_rostricycle)/urdf/rostricycle.xacro'" />
 
   <!-- 掛入自製的控制器給 controller manager 管理 -->
-    <node name="tricycle_control" pkg="my_rostricycle" type="tricycle_control" output="screen">
-      <!-- remap from="agv_controller/cmd_vel" to="cmd_vel"/ -->
-      <!-- remap from="agv_controller/odom" to="odom"/ -->
+    <node name="tricycle_control" pkg="my_rostricycle" type="tricycle_control" output="screen" >
     </node>
     <param name="period" type="double" value="0.05" />
     <param name="port_1" type="string" value="/dev/ttyUSB0" />
@@ -21,7 +19,10 @@
   
   <!-- 依照阿克曼 .yaml 設定的控制器 -->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-	    output="screen" args="agv_robot_joint_publisher agv_ackermann_steering_controller"/> 
+	    output="screen" args="fork_position_controller 
+	                          joint_state_controller 
+	                          agv_robot_joint_publisher 
+	                          agv_ackermann_steering_controller"/> 
 
   <!-- 帶起關節狀態發報器 -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" 
