@@ -95,6 +95,11 @@ TricycleDriver::~TricycleDriver()
   else {
     ROS_ERROR_STREAM_ONCE("~TricycleDriver() can not stop motor.");
   }
+
+#if USETHREAD
+  ROS_INFO_STREAM_ONCE(">> joint thread...");
+  read_thread_.join();
+#endif
 }
 
 /*
@@ -229,6 +234,13 @@ bool TricycleDriver::start()
 
 #endif
 
+#if USETHREAD
+  ROS_INFO_STREAM_ONCE(">> start init thread...");
+  read_thread_ = std::thread([this]() {
+    thread_func_();
+  });
+#endif
+
   return true;
 }
 
@@ -245,5 +257,20 @@ bool TricycleDriver::stop()
   return true;
 }
 
+#if USETHREAD
+void TricycleDriver::thread_func_()
+{
+  static int i = 0;
+
+  ROS_INFO_STREAM_ONCE(">> into thread_func()");
+
+  while(ros::ok) {
+    ROS_INFO_STREAM_THROTTLE(1, ">> thread_func: " << i);
+    i++;
+  }
+
+  ROS_INFO_STREAM_ONCE(">> exit thread_func()");
+}
+#endif
 
 }  // namespace agv

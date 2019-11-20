@@ -9,9 +9,11 @@
 
 #define tcdbg 1
 #define USECAN 1
+#define USETHREAD 0
 
 #include <string>
 #include <vector>
+#include <thread>
 
 #include <ros/ros.h>
 #include <ros/console.h>
@@ -75,6 +77,11 @@ private:
   FakeMotor front_steer_;
   FakeMotor front_wheel_;
   #endif
+
+#if USETHREAD
+  std::thread read_thread_;
+  void thread_func_();
+#endif
 };
 
 
