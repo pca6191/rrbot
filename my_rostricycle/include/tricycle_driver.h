@@ -8,8 +8,9 @@
 #define TRICYCLE_DRIVER_H_
 
 #define tcdbg 1
-#define USECAN 1
+#define USECAN 0
 #define USETHREAD 0
+#define USEIGAIN 1
 
 #include <string>
 #include <vector>
@@ -24,6 +25,10 @@
 
 #if tcdbg
 #include <fake_motor.h>
+#endif
+
+#if USEIGAIN
+#include <agv_pid_controller.h>
 #endif
 
 namespace agv
@@ -81,6 +86,10 @@ private:
 #if USETHREAD
   std::thread read_thread_;
   void thread_func_();
+#endif
+
+#if USEIGAIN
+  agv::PIDController pid_ctrl_;
 #endif
 };
 

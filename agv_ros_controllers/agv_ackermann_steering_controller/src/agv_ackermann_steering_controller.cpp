@@ -69,7 +69,11 @@ static double euclideanOfVectors(const urdf::Vector3& vec1, const urdf::Vector3&
  * \param link Link
  * \return true if the link is modeled as a Cylinder; false otherwise
  */
+#if 1  // 回歸官網作法
+static bool isCylinder(const urdf::LinkConstSharedPtr& link)
+#else
 static bool isCylinder(const boost::shared_ptr<const urdf::Link>& link)
+#endif
 {
   if (!link)
   {
@@ -105,7 +109,11 @@ static bool isCylinder(const boost::shared_ptr<const urdf::Link>& link)
  * \return true if the wheel radius was found; false other
 wise
  */
+#if 1  // 回歸官網作法
+static bool getWheelRadius(const urdf::LinkConstSharedPtr& wheel_link, double& wheel_radius)
+#else
 static bool getWheelRadius(const boost::shared_ptr<const urdf::Link>& wheel_link, double& wheel_radius)
+#endif
 {
   if (!isCylinder(wheel_link))
   {
@@ -452,12 +460,21 @@ namespace agv_ackermann_steering_controller{
       return false;
     }
 
+#if 1  // 回歸官方作法
+    urdf::ModelInterfaceSharedPtr model(urdf::parseURDF(robot_model_str));
+
+    urdf::JointConstSharedPtr rear_left_wheel_joint(model->getJoint(rear_left_wheel_name));
+    urdf::JointConstSharedPtr rear_right_wheel_joint(model->getJoint(rear_right_wheel_name));
+    urdf::JointConstSharedPtr front_steer_joint(model->getJoint(front_steer_name));
+    urdf::JointConstSharedPtr front_wheel_joint(model->getJoint(front_wheel_name));
+#else
     boost::shared_ptr<urdf::ModelInterface> model(urdf::parseURDF(robot_model_str));
 
     boost::shared_ptr<const urdf::Joint> rear_left_wheel_joint(model->getJoint(rear_left_wheel_name));
     boost::shared_ptr<const urdf::Joint> rear_right_wheel_joint(model->getJoint(rear_right_wheel_name));
     boost::shared_ptr<const urdf::Joint> front_steer_joint(model->getJoint(front_steer_name));
     boost::shared_ptr<const urdf::Joint> front_wheel_joint(model->getJoint(front_wheel_name));
+#endif
 
     if (lookup_wheel_separation_h)
     {

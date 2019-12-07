@@ -27,6 +27,9 @@ namespace agv
  */
 TricycleDriver::TricycleDriver(const std::string &port_1, const int baud,
       const int timeout, const int bytesize, const int parity)
+#if USEIGAIN
+  :pid_ctrl_(0.0, 0.1, 0.0, 6)
+#endif
 {
   (void)port_1;
   (void)baud;
@@ -90,14 +93,14 @@ TricycleDriver::TricycleDriver(const std::string &port_1, const int baud,
 TricycleDriver::~TricycleDriver()
 {
   if (stop()) {
-    ROS_INFO_STREAM("Stopping motor successfully !");
+    printf("Stopping motor successfully !");
   }
   else {
-    ROS_ERROR_STREAM_ONCE("~TricycleDriver() can not stop motor.");
+    printf("~TricycleDriver() can not stop motor.");
   }
 
 #if USETHREAD
-  ROS_INFO_STREAM_ONCE(">> joint thread...");
+  printf(">> joint thread...");
   read_thread_.join();
 #endif
 }
@@ -140,9 +143,20 @@ void TricycleDriver::write()
     //ROS_INFO_STREAM("Message was written to the socket \n");
   }
 #else
+  #if USEIGAIN
+  front_steer_.set_pos(cmd_[steer_index_]);  // 單位應為徑度
+
+  pid_ctrl_.set_error(cmd_[wheel_index_] - vel_[wheel_index_]);
+  double cmd_pushed = cmd_[wheel_index_] + pid_ctrl_.get_output();  // 推一把速度
+
+  front_wheel_.set_vel(cmd_pushed);   // 單位應為 rad/s
+
+  ROS_INFO(">>> cmd_= %lf, vel_ = %lf, cmd_pushed = %lf\n", cmd_[wheel_index_], vel_[wheel_index_], cmd_pushed);
+  #else
   // 將 cmd_[STEER], cmd_[WHEEL] 代表的物理量，換算成 canbus 指令，並送出
   front_steer_.set_pos(cmd_[steer_index_]);  // 單位應為徑度
   front_wheel_.set_vel(cmd_[wheel_index_]);   // 單位應為 rad/s
+  #endif
 #endif
 
 #if tcdbg

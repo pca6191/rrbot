@@ -128,7 +128,10 @@ include_directories(
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/my_rostricycle.cpp
 # )
-add_executable(tricycle_control src/tricycle_control.cpp src/tricycle_driver.cpp src/socketcan_cpp.cpp)
+add_executable(tricycle_control src/tricycle_control.cpp 
+                                src/tricycle_driver.cpp 
+                                src/socketcan_cpp.cpp
+                                src/agv_pid_controller.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
