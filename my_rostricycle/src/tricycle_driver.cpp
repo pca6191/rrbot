@@ -151,7 +151,7 @@ void TricycleDriver::write()
 
   front_wheel_.set_vel(cmd_pushed);   // 單位應為 rad/s
 
-  ROS_INFO(">>> cmd_= %lf, vel_ = %lf, cmd_pushed = %lf\n", cmd_[wheel_index_], vel_[wheel_index_], cmd_pushed);
+  ROS_INFO(">>> cmd_= %lf, vel_ = %lf, cmd_pushed = %lf", cmd_[wheel_index_], vel_[wheel_index_], cmd_pushed);
   #else
   // 將 cmd_[STEER], cmd_[WHEEL] 代表的物理量，換算成 canbus 指令，並送出
   front_steer_.set_pos(cmd_[steer_index_]);  // 單位應為徑度
@@ -160,8 +160,8 @@ void TricycleDriver::write()
 #endif
 
 #if tcdbg
-  ROS_INFO_STREAM_THROTTLE(1, ">> write:steer cmd_:" << cmd_[steer_index_]);
-  ROS_INFO_STREAM_THROTTLE(1, ">> write:wheel cmd_:" << cmd_[wheel_index_]);
+  // ROS_INFO_STREAM_THROTTLE(1, ">> write:steer cmd_:" << cmd_[steer_index_]);
+  // ROS_INFO_STREAM_THROTTLE(1, ">> write:wheel cmd_:" << cmd_[wheel_index_]);
 #endif
 }
 
@@ -232,9 +232,9 @@ void TricycleDriver::read(const ros::Duration period)
 #endif
 
 #if tcdbg
-  ROS_INFO_STREAM_THROTTLE(1, ">>> read:steer pos_:" << pos_[steer_index_]);
-  ROS_INFO_STREAM_THROTTLE(1, ">>> read:wheel vel_:" << vel_[wheel_index_]);
-  ROS_INFO_STREAM_THROTTLE(1, ">>> read:wheel pos_:" << pos_[wheel_index_]);
+  // ROS_INFO_STREAM_THROTTLE(1, ">>> read:steer pos_:" << pos_[steer_index_]);
+  // ROS_INFO_STREAM_THROTTLE(1, ">>> read:wheel vel_:" << vel_[wheel_index_]);
+  // ROS_INFO_STREAM_THROTTLE(1, ">>> read:wheel pos_:" << pos_[wheel_index_]);
 #endif
 }
 
