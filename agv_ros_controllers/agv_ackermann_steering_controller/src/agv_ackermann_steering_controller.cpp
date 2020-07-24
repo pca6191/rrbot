@@ -69,11 +69,7 @@ static double euclideanOfVectors(const urdf::Vector3& vec1, const urdf::Vector3&
  * \param link Link
  * \return true if the link is modeled as a Cylinder; false otherwise
  */
-#if 1  // 回歸官網作法
-static bool isCylinder(const urdf::LinkConstSharedPtr& link)
-#else
 static bool isCylinder(const boost::shared_ptr<const urdf::Link>& link)
-#endif
 {
   if (!link)
   {
@@ -109,11 +105,7 @@ static bool isCylinder(const boost::shared_ptr<const urdf::Link>& link)
  * \return true if the wheel radius was found; false other
 wise
  */
-#if 1  // 回歸官網作法
-static bool getWheelRadius(const urdf::LinkConstSharedPtr& wheel_link, double& wheel_radius)
-#else
 static bool getWheelRadius(const boost::shared_ptr<const urdf::Link>& wheel_link, double& wheel_radius)
-#endif
 {
   if (!isCylinder(wheel_link))
   {
@@ -241,6 +233,15 @@ namespace agv_ackermann_steering_controller{
     controller_nh.param("angular/z/max_jerk"               , limiter_ang_.max_jerk               ,  limiter_ang_.max_jerk              );
     controller_nh.param("angular/z/min_jerk"               , limiter_ang_.min_jerk               , -limiter_ang_.max_jerk              );
 
+    controller_nh.param("reach_angle", reach_angle_, reach_angle_);
+    ROS_INFO_STREAM_NAMED(name_, "reach_angle set to " << reach_angle_);
+
+    controller_nh.param("angle_diff_limit", angle_diff_limit_, angle_diff_limit_);
+    ROS_INFO_STREAM_NAMED(name_, "angle_diff_limit set to " << angle_diff_limit_);
+
+    controller_nh.param("time_limit", time_limit_, time_limit_);
+    ROS_INFO_STREAM_NAMED(name_, "time_limit set to " << time_limit_);
+
     // If either parameter is not available, we need to look up the value in the URDF
     bool lookup_wheel_separation_h = !controller_nh.getParam("wheel_separation_h", wheel_separation_h_);
     bool lookup_wheel_radius = !controller_nh.getParam("wheel_radius", wheel_radius_);
@@ -355,32 +356,71 @@ namespace agv_ackermann_steering_controller{
     {
       curr_cmd.lin = 0.0;
       curr_cmd.ang = 0.0;
+      turn_steering_first_ = false;
+      timeout_ = false;
     }
 
     // Limit velocities and accelerations:
     const double cmd_dt(period.toSec());
 
-    limiter_lin_.limit(curr_cmd.lin, last0_cmd_.lin, last1_cmd_.lin, cmd_dt);
-    limiter_ang_.limit(curr_cmd.ang, last0_cmd_.ang, last1_cmd_.ang, cmd_dt);
+    if (using_body_cmdvel_) {  // cmd_vel 使用車體描述
+      limiter_lin_.limit(curr_cmd.lin, last0_cmd_.lin, last1_cmd_.lin, cmd_dt);
+      limiter_ang_.limit(curr_cmd.ang, last0_cmd_.ang, last1_cmd_.ang, cmd_dt);
+
+      if (curr_cmd.ang != last0_cmd_.ang) {
+        timeout_ = false;
+        start_ = ros::Time::now();
+      }
 
     last1_cmd_ = last0_cmd_;
     last0_cmd_ = curr_cmd;
 
+    double curr_steering_angle = front_steer_joint_.getPosition() * degree_;
+    if (turn_steering_first_
+        && (std::abs(curr_steering_angle - pre_steering_angle_) < angle_diff_limit_)) {
+      end_ = ros::Time::now();
+      if ((end_ - start_).toSec() > time_limit_) {
+        timeout_ = true;
+      }
+    }
+    else {
+      start_ = ros::Time::now();
+    }
+    pre_steering_angle_ = curr_steering_angle;
+
     // Set Command
-    const double offset_vel = curr_cmd.ang * wheel_separation_h_;
-    const double wheel_vel = std::sqrt(curr_cmd.lin * curr_cmd.lin + offset_vel * offset_vel) / wheel_radius_;
-    front_wheel_joint_.setCommand(curr_cmd.lin >= 0 ? wheel_vel : -wheel_vel);
+    if ((turn_steering_first_ && std::abs(curr_steering_angle) < reach_angle_) && !timeout_) {
+      front_wheel_joint_.setCommand(0);
+    }
+    else {
+      const double offset_vel = curr_cmd.ang * wheel_separation_h_;
+      const double wheel_vel = std::sqrt(curr_cmd.lin * curr_cmd.lin + offset_vel * offset_vel)
+          / wheel_radius_;
+      front_wheel_joint_.setCommand(curr_cmd.lin >= 0 ? wheel_vel : -wheel_vel);
+    }
 
     const double ang = curr_cmd.lin >= 0 ? curr_cmd.ang : -curr_cmd.ang;
 #ifdef STEER_VELOCITY_DRIVE
     front_steer_joint_.setCommand(ang);
 #endif
 #ifdef STEER_POSITION_DRIVE
-    const double theta = std::atan2(ang * wheel_separation_h_, std::fabs(curr_cmd.lin));
+    const double theta = std::atan2(ang * wheel_separation_h_, std::abs(curr_cmd.lin));
+    // const double angle = theta * 180 / 3.14;
     front_steer_joint_.setCommand(theta);
+    // ROS_INFO_STREAM("angle = " << angle);
 #endif
-
   }
+  else{  // cmd_vel 使用舵輪描述
+    last1_cmd_.lin = last0_cmd_.lin = 0.0;  // 設為 0.0, 避免使用 (x,z) 時因作 limit ,
+    last1_cmd_.ang = last0_cmd_.ang = 0.0;  // 污染 (x,z) ==> (y, y) 不作 limit.
+    // Set Command
+    const double wheel_vel = curr_cmd.lin / wheel_radius_;  // m/s 換算成為 rad/s
+    front_wheel_joint_.setCommand(wheel_vel);
+
+    const double theta = curr_cmd.ang * M_PI / 180;  // deg 換算成為 rad
+    front_steer_joint_.setCommand(theta);
+  }
+}
 
   void AgvAckermannSteeringController::starting(const ros::Time& time)
   {
@@ -419,10 +459,30 @@ namespace agv_ackermann_steering_controller{
         return;
       }
 
-      command_struct_.ang   = command.angular.z;
-      command_struct_.lin   = command.linear.x;
+      // cmd_vel 先取舵輪描述 (y,y), 若車體描述有值 (x,z), 則以車體為準
+      command_struct_.ang   = command.angular.y;
+      command_struct_.lin   = command.linear.y;
+      using_body_cmdvel_ = false;
+
+      if ((command.angular.z != 0.0) || (command.linear.x != 0.0)) {
+        command_struct_.ang = command.angular.z;
+        command_struct_.lin = command.linear.x;
+        using_body_cmdvel_ = true;
+      }
       command_struct_.stamp = ros::Time::now();
       command_.writeFromNonRT (command_struct_);
+
+#if 0  // KC: 取消先轉再滾，因為平滑運動無此需求
+      if (command.linear.x == 0 && command.angular.z != 0)
+      {
+        turn_steering_first_ = true;
+      }
+      else
+      {
+        turn_steering_first_ = false;
+      }
+#endif
+
       ROS_DEBUG_STREAM_NAMED(name_,
                              "Added values to command. "
                              << "Ang: "   << command_struct_.ang << ", "
@@ -460,21 +520,12 @@ namespace agv_ackermann_steering_controller{
       return false;
     }
 
-#if 1  // 回歸官方作法
-    urdf::ModelInterfaceSharedPtr model(urdf::parseURDF(robot_model_str));
-
-    urdf::JointConstSharedPtr rear_left_wheel_joint(model->getJoint(rear_left_wheel_name));
-    urdf::JointConstSharedPtr rear_right_wheel_joint(model->getJoint(rear_right_wheel_name));
-    urdf::JointConstSharedPtr front_steer_joint(model->getJoint(front_steer_name));
-    urdf::JointConstSharedPtr front_wheel_joint(model->getJoint(front_wheel_name));
-#else
     boost::shared_ptr<urdf::ModelInterface> model(urdf::parseURDF(robot_model_str));
 
     boost::shared_ptr<const urdf::Joint> rear_left_wheel_joint(model->getJoint(rear_left_wheel_name));
     boost::shared_ptr<const urdf::Joint> rear_right_wheel_joint(model->getJoint(rear_right_wheel_name));
     boost::shared_ptr<const urdf::Joint> front_steer_joint(model->getJoint(front_steer_name));
     boost::shared_ptr<const urdf::Joint> front_wheel_joint(model->getJoint(front_wheel_name));
-#endif
 
     if (lookup_wheel_separation_h)
     {

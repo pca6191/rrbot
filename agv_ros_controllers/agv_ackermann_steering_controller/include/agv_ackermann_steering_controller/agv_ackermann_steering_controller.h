@@ -170,6 +170,17 @@ namespace agv_ackermann_steering_controller{
     agv_diff_drive_controller::SpeedLimiter limiter_lin_;
     agv_diff_drive_controller::SpeedLimiter limiter_ang_;
 
+    // turn steering first when there is only angular velocity
+    bool turn_steering_first_;
+    const double degree_ = 180 / M_PI;
+    double reach_angle_;  // Start to set linear velocity when reaching this angle.
+    ros::Time start_ = ros::Time::now();
+    ros::Time end_ = ros::Time::now();
+    double time_limit_;
+    double angle_diff_limit_;
+    bool timeout_ = false;
+    double pre_steering_angle_;
+
   private:
     /**
      * \brief Brakes the wheels, i.e. sets the velocity to 0
@@ -203,6 +214,8 @@ namespace agv_ackermann_steering_controller{
      */
     void setOdomPubFields(ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh);
 
+    bool using_body_cmdvel_ = true;  // true: cmd_vel 描述車體運動 (使用 lin.z & ang.z)
+                                     // false:cmd_vel 描述舵輪運動 (使用 lin.y & ang.y)
   };
 
 } // namespace ackermann_drive_controller

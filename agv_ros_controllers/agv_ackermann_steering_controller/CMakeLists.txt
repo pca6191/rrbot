@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(agv_ackermann_steering_controller)
 
+add_compile_options(-std=c++11)
+
 find_package(catkin REQUIRED COMPONENTS
   controller_interface
   agv_diff_drive_controller
