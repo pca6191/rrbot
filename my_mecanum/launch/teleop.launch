@@ -1,0 +1,7 @@
+<launch>
+
+  <node name="mecanum_teleop" pkg="my_mecanum" type="mecanum_teleop.py"  output="screen">
+    <param name="twist_topic" type="string" value="/cmd_vel" />
+  </node>
+
+</launch>
