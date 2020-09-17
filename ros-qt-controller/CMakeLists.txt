@@ -6,7 +6,7 @@ find_package(Qt5Core REQUIRED)
 
 catkin_package(
   CATKIN_DEPENDS roscpp geometry_msgs
-  DEPENDS system-lib
+#  DEPENDS system-lib
 )
 
 qt5_add_resources(QT_RESOURCES_CPP qt_resources/arrows.qrc)
