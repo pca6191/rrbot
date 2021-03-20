@@ -4,6 +4,9 @@
 
 在 gazebo 會看到：一長立柱、一短旋臂。
 
+### dependency
+
+要裝 ros-kinetic-gazebo-ros-control
 
 ### 轉動旋臂
 
