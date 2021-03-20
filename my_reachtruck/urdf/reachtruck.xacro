@@ -1,0 +1,379 @@
+<?xml version="1.0"?>
+<robot name="reachtruck" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!-- define constants -->
+<xacro:property name="PI" value="3.1415926" />
+
+<xacro:property name="base_mass" value="5.0" /> <!-- kg -->
+<xacro:property name="base_height" value="0.001" /> <!-- m -->
+<xacro:property name="base_width" value="6" /> <!-- m -->
+<xacro:property name="base_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="base_trac_mass" value="1.0" /> <!-- kg -->
+<xacro:property name="base_trac_height" value="2" /> <!-- m -->
+<xacro:property name="base_trac_width" value="0.1" /> <!-- m -->
+<xacro:property name="base_trac_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="trac_mass" value="0.5" /> <!-- kg -->
+<xacro:property name="trac_height" value="0.5" /> <!-- m -->
+<xacro:property name="trac_width" value="0.1" /> <!-- m -->
+<xacro:property name="trac_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="base_steer_mass" value="1.0" /> <!-- kg -->
+<xacro:property name="base_steer_height" value="2" /> <!-- m -->
+<xacro:property name="base_steer_width" value="0.1" /> <!-- m -->
+<xacro:property name="base_steer_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="steer_mass" value="0.5" /> <!-- kg -->
+<xacro:property name="steer_height" value="0.5" /> <!-- m -->
+<xacro:property name="steer_width" value="0.1" /> <!-- m -->
+<xacro:property name="steer_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="base_fork_x_mass" value="1.0" /> <!-- kg -->
+<xacro:property name="base_fork_x_height" value="0.1" /> <!-- m -->
+<xacro:property name="base_fork_x_width" value="1" /> <!-- m -->
+<xacro:property name="base_fork_x_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="fork_x_mass" value="0.1" /> <!-- kg -->
+<xacro:property name="fork_x_height" value="0.1" /> <!-- m -->
+<xacro:property name="fork_x_width" value="0.1" /> <!-- m -->
+<xacro:property name="fork_x_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="base_fork_y_mass" value="1.0" /> <!-- kg -->
+<xacro:property name="base_fork_y_height" value="0.1" /> <!-- m -->
+<xacro:property name="base_fork_y_width" value="0.1" /> <!-- m -->
+<xacro:property name="base_fork_y_depth" value="2.0" /> <!-- m -->
+
+<xacro:property name="fork_y_mass" value="0.5" /> <!-- kg -->
+<xacro:property name="fork_y_height" value="0.1" /> <!-- m -->
+<xacro:property name="fork_y_width" value="0.1" /> <!-- m -->
+<xacro:property name="fork_y_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="base_fork_z_mass" value="1.0" /> <!-- kg -->
+<xacro:property name="base_fork_z_height" value="3" /> <!-- m -->
+<xacro:property name="base_fork_z_width" value="0.1" /> <!-- m -->
+<xacro:property name="base_fork_z_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="fork_z_mass" value="0.5" /> <!-- kg -->
+<xacro:property name="fork_z_height" value="0.1" /> <!-- m -->
+<xacro:property name="fork_z_width" value="0.1" /> <!-- m -->
+<xacro:property name="fork_z_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="base_fork_rot_mass" value="1.0" /> <!-- kg -->
+<xacro:property name="base_fork_rot_height" value="2" /> <!-- m -->
+<xacro:property name="base_fork_rot_width" value="0.1" /> <!-- m -->
+<xacro:property name="base_fork_rot_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="fork_rot_mass" value="0.5" /> <!-- kg -->
+<xacro:property name="fork_rot_height" value="0.8" /> <!-- m -->
+<xacro:property name="fork_rot_width" value="0.1" /> <!-- m -->
+<xacro:property name="fork_rot_depth" value="0.1" /> <!-- m -->
+
+<xacro:property name="gap_lenght" value="0.05" /> <!-- m: distance from joint to side -->
+
+<!-- define macros -->
+<xacro:macro name="box_inertia_matrix_" params="m w h d">
+  <inertial>
+    <mass value="${m}"/>
+    <inertia ixx="${m / 12.0 * (d*d + h*h)}" ixy="0.0" ixz="0.0" 
+             iyy="${m / 12.0 * (w*w + h*h)}" iyz="0.0" 
+             izz="${m / 12.0 * (w*w + d*d)}"/>
+  </inertial>
+</xacro:macro>
+
+<xacro:macro name="link_at_base_" params="name m w h d">
+<link name="${name}">
+ <collision>
+    <geometry>
+      <box size="${w} ${d} ${h}" />
+    </geometry>
+    <origin xyz="0 0 ${h/2}" rpy="0 0 0" />
+  </collision>
+  
+  <visual>
+    <geometry>
+      <box size="${w} ${d} ${h}" />
+    </geometry>
+    <origin xyz="0 0 ${h/2}" rpy="0 0 0" />
+  </visual>
+  
+  <inertial>
+    <mass value="${m}"/>
+    <inertia ixx="${m / 12.0 * (d*d + h*h)}" ixy="0.0" ixz="0.0" 
+             iyy="${m / 12.0 * (w*w + h*h)}" iyz="0.0" 
+             izz="${m / 12.0 * (w*w + d*d)}"/>
+  </inertial>
+</link>
+</xacro:macro>
+
+
+<!-- define links -->
+<link name="world" />
+
+
+<!-- Base Link-->
+<link_at_base_ name="base_link" m="${base_mass}" w="${base_width}" h="${base_height}" d="${base_depth}"/> 
+
+<gazebo reference="base_link">
+  <material>Gazebo/Orange</material>
+</gazebo>
+
+<joint name="ground_joint" type="fixed">  <!-- fix to the ground -->
+  <parent link="world" />
+  <child link="base_link" />
+</joint>
+
+<!-- Base Trac Link-->
+<link_at_base_ name="base_trac_link" m="${base_trac_mass}" w="${base_trac_width}" h="${base_trac_height}" d="${base_trac_depth}"/> 
+
+<gazebo reference="base_trac_link">
+  <material>Gazebo/Orange</material>
+</gazebo>
+
+<joint name="base_trac_joint" type="fixed">  <!-- fix to the ground -->
+  <parent link="base_link" />
+  <child link="base_trac_link" />
+  <origin xyz="-3 0 0" rpy="0 0 0" />
+  <axis xyz="0 0 0" />
+</joint>
+
+<!-- Link Trac -->
+<link_at_base_ name="link_trac" m="${trac_mass}" w="${trac_width}" h="${trac_height}" d="${trac_depth}"/> 
+
+<gazebo reference="link_trac">
+  <material>Gazebo/Black</material>
+</gazebo>
+
+<joint name="joint_trac" type="continuous"> 
+  <parent link="base_trac_link" />
+  <child link="link_trac" />
+  <origin xyz="${base_trac_width} 0 ${base_trac_height - gap_lenght}" rpy="0 0 0" />
+  <axis xyz="1 0 0" />
+</joint>
+
+<transmission name="tran_trac">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="joint_trac">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="motor_trac">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+
+<!-- Base Steer Link-->
+<link_at_base_ name="base_steer_link" m="${base_steer_mass}" w="${base_steer_width}" h="${base_steer_height}" d="${base_steer_depth}"/> 
+
+<gazebo reference="base_steer_link">
+  <material>Gazebo/Orange</material>
+</gazebo>
+
+<joint name="base_steer_joint" type="fixed">  <!-- fix to the ground -->
+  <parent link="base_link" />
+  <child link="base_steer_link" />
+  <origin xyz="-2 0 0" rpy="0 0 0" />
+  <axis xyz="0 0 0" />
+</joint>
+
+<!-- Link steer -->
+<link_at_base_ name="link_steer" m="${steer_mass}" w="${steer_width}" h="${steer_height}" d="${steer_depth}"/> 
+
+<gazebo reference="link_steer">
+  <material>Gazebo/Black</material>
+</gazebo>
+
+<joint name="joint_steer" type="continuous"> 
+  <parent link="base_steer_link" />
+  <child link="link_steer" />
+  <origin xyz="0 0 ${base_steer_height}" rpy="${PI/2} 0 0" />
+  <axis xyz="0 1 0" />
+</joint>
+
+<transmission name="tran_steer">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="joint_steer">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="motor_steer">
+    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<!-- Base fork_x Link-->
+<link_at_base_ name="base_fork_x_link" m="${base_fork_x_mass}" w="${base_fork_x_width}" h="${base_fork_x_height}" d="${base_fork_x_depth}"/> 
+
+<gazebo reference="base_fork_x_link">
+  <material>Gazebo/Orange</material>
+</gazebo>
+
+<joint name="base_fork_x_joint" type="fixed">  <!-- fix to the ground -->
+  <parent link="base_link" />
+  <child link="base_fork_x_link" />
+  <origin xyz="0 0 0" rpy="0 0 0" />
+  <axis xyz="0 0 0" />
+</joint>
+
+<!-- Link fork_x -->
+<link_at_base_ name="link_fork_x" m="${fork_x_mass}" w="${fork_x_width}" h="${fork_x_height}" d="${fork_x_depth}"/> 
+
+<gazebo reference="link_fork_x">
+  <material>Gazebo/Black</material>
+</gazebo>
+
+<joint name="joint_fork_x" type="prismatic"> 
+  <parent link="base_fork_x_link" />
+  <child link="link_fork_x" />
+  <limit effort="100" velocity="0.2" lower="${-base_fork_x_width/2}" upper="${base_fork_x_width/2}" />
+  <origin xyz="${-base_fork_x_width/2} 0 ${base_fork_x_height}" rpy="0 0 0" />
+  <axis xyz="1 0 0" />
+</joint>
+
+
+<transmission name="tran_fork_x">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="joint_fork_x">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="motor_fork_x">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<!-- Base fork_y Link-->
+<link_at_base_ name="base_fork_y_link" m="${base_fork_y_mass}" w="${base_fork_y_width}" h="${base_fork_y_height}" d="${base_fork_y_depth}"/> 
+
+<gazebo reference="base_fork_y_link">
+  <material>Gazebo/Orange</material>
+</gazebo>
+
+<joint name="base_fork_y_joint" type="fixed">  <!-- fix to the ground -->
+  <parent link="base_link" />
+  <child link="base_fork_y_link" />
+  <origin xyz="-1 ${base_fork_y_depth/2 - base_depth/2} 0" rpy="0 0 0" />
+  <axis xyz="0 0 0" />
+</joint>
+
+<!-- Link fork_y -->
+<link_at_base_ name="link_fork_y" m="${fork_y_mass}" w="${fork_y_width}" h="${fork_y_height}" d="${fork_y_depth}"/> 
+
+<gazebo reference="link_fork_y">
+  <material>Gazebo/Black</material>
+</gazebo>
+
+<joint name="joint_fork_y" type="prismatic"> 
+  <parent link="base_fork_y_link" />
+  <child link="link_fork_y" />
+  <limit effort="100" velocity="0.2" lower="0" upper="${base_fork_y_depth}" />
+  <origin xyz="0 ${-base_fork_y_depth/2 + base_depth/2} ${base_fork_y_height}" rpy="0 0 0" />
+  <axis xyz="0 1 0" />
+</joint>
+
+
+<transmission name="tran_fork_y">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="joint_fork_y">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="motor_fork_y">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+
+<!-- Base fork_z Link-->
+<link_at_base_ name="base_fork_z_link" m="${base_fork_z_mass}" w="${base_fork_z_width}" h="${base_fork_z_height}" d="${base_fork_z_depth}"/> 
+
+<gazebo reference="base_fork_z_link">
+  <material>Gazebo/Orange</material>
+</gazebo>
+
+<joint name="base_fork_z_joint" type="fixed">  <!-- fix to the ground -->
+  <parent link="base_link" />
+  <child link="base_fork_z_link" />
+  <origin xyz="1 0 0" rpy="0 0 0" />
+  <axis xyz="0 0 0" />
+</joint>
+
+<!-- Link fork_z -->
+<link_at_base_ name="link_fork_z" m="${fork_z_mass}" w="${fork_z_width}" h="${fork_z_height}" d="${fork_z_depth}"/> 
+
+<gazebo reference="link_fork_z">
+  <material>Gazebo/Black</material>
+</gazebo>
+
+<joint name="joint_fork_z" type="prismatic"> 
+  <parent link="base_fork_z_link" />
+  <child link="link_fork_z" />
+  <limit effort="100" velocity="0.2" lower="0.0" upper="${base_fork_z_height}" />
+  <origin xyz="${-base_fork_z_width} 0 0" rpy="0 0 0" />
+  <axis xyz="0 0 1" />
+</joint>
+
+
+<transmission name="tran_fork_z">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="joint_fork_z">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="motor_fork_z">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+
+<!-- Base Fork_rot Link-->
+<link_at_base_ name="base_fork_rot_link" m="${base_fork_rot_mass}" w="${base_fork_rot_width}" h="${base_fork_rot_height}" d="${base_fork_rot_depth}"/> 
+
+<gazebo reference="base_fork_rot_link">
+  <material>Gazebo/Orange</material>
+</gazebo>
+
+<joint name="base_fork_rot_joint" type="fixed">  <!-- fix to the ground -->
+  <parent link="base_link" />
+  <child link="base_fork_rot_link" />
+  <origin xyz="2 0 0" rpy="0 0 0" />
+  <axis xyz="0 0 0" />
+</joint>
+
+<!-- Link Fork_rot -->
+<link_at_base_ name="link_fork_rot" m="${fork_rot_mass}" w="${fork_rot_width}" h="${fork_rot_height}" d="${fork_rot_depth}"/> 
+
+<gazebo reference="link_fork_rot">
+  <material>Gazebo/Black</material>
+</gazebo>
+
+<joint name="joint_fork_rot" type="continuous"> 
+  <parent link="base_fork_rot_link" />
+  <child link="link_fork_rot" />
+  <origin xyz="${-base_fork_rot_width} 0 ${base_fork_rot_height/2}" rpy="0 0 0" />
+  <axis xyz="1 0 0" />
+</joint>
+
+<transmission name="tran_fork_rot">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="joint_fork_rot">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="motor_fork_rot">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+
+<!-- ros_control plugin -->
+ <gazebo>
+   <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+     <robotNamespace>/reachtruck</robotNamespace>
+     <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+     <legacyModeNS>true</legacyModeNS>  <!-- KC_DBG : to avoid gazebo version warring-->
+   </plugin>
+ </gazebo>
+ 
+</robot>
