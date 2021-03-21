@@ -292,13 +292,12 @@ bool MoBoxServer::parse_trac_steer_cmd(double *mmps, double *cdeg)
 
 bool MoBoxServer::parse_fork_cmd(double *x_mmps, double *y_mmps, double *z_mmps, double *rot_radps)
 {
-  (*x_mmps) = 0.0;
-  (*y_mmps) = 0.0;
-  (*z_mmps) = 0.0;
-  (*rot_radps) = 0.0;
-
   if (packet_recieved_.size() < static_cast<size_t>(sizeof_packet_)) {
     // 資料不可信
+    (*x_mmps) = 0.0;
+    (*y_mmps) = 0.0;
+    (*z_mmps) = 0.0;
+    (*rot_radps) = 0.0;
     return false;
   }
 
@@ -306,10 +305,19 @@ bool MoBoxServer::parse_fork_cmd(double *x_mmps, double *y_mmps, double *z_mmps,
     return false;
   }
 
+  // 一次只能有一檔動
+  (*x_mmps) = 0.0;
+  (*y_mmps) = 0.0;
+  (*z_mmps) = 0.0;
+  (*rot_radps) = 0.0;
+
   // ** 假設 pump 2000 rpm 對應 200 mm/s, 閥門 255 對應下降 20 cm/s **
   int16_t valve = packet_recieved_[5] | (packet_recieved_[6] << 8);
   int16_t pump_rpm = packet_recieved_[7] | (packet_recieved_[8] << 8);
   int16_t swptn = packet_recieved_[9] | (packet_recieved_[10] << 8);
+
+//  ROS_ERROR("%02X %02X | %02X %02X | %02X %02X", packet_recieved_[5], packet_recieved_[6],
+//      packet_recieved_[7], packet_recieved_[8], packet_recieved_[9], packet_recieved_[10]);
 
   double pump_mmps = pump_rpm * pump_rpm_to_mmps_;
   double valve_mmps = valve * valve_to_mmps_;

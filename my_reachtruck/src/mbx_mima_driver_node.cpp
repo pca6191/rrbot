@@ -73,10 +73,6 @@ public:
       fork_rot_cmd_pub_.publish(get_fork_rot_effort());
 
       // 回應 (sensor) 狀態
-      mobox_server_->set_sensor_trac_mmps(-1000.0);
-      mobox_server_->set_sensor_steer_cdeg(-9000.0);
-      mobox_server_->set_sensor_fork_y_mm(-2000.0);
-      mobox_server_->set_sensor_fork_z_mm(-3000.0);
       if (!mobox_server_->send_packet()) {
         ROS_ERROR("[%s] send_packet() error !", class_name_);
       }
@@ -106,7 +102,7 @@ private:
     std_msgs::Float64 v;
     double cdeg;
     cdeg = mobox_server_->get_steer_cdeg();
-    v.data = cdeg / 100.0 / M_PI * 180;  // 轉成 rad
+    v.data = cdeg / 100.0 / 180 * M_PI;  // 轉成 rad
 
     return v;  // 傳出 rad
   }
@@ -172,11 +168,11 @@ private:
     const uint8_t fork_z_index = 3;
 
     // trac: rad/s to mm/s
-    double mmps = msg->velocity[trac_index] * mima_wheel_radius_;
+    double mmps = msg->velocity[trac_index] * mima_wheel_radius_ * 1000.0;
     mobox_server_->set_sensor_trac_mmps(mmps);
 
     // steer: rad to cdeg
-    double cdeg = msg->position[steer_index] * 180 / M_PI * 100.0;
+    double cdeg = msg->position[steer_index] * 180.0 / M_PI * 100.0;
     mobox_server_->set_sensor_steer_cdeg(cdeg);
 
     // fork_y: m to mm
