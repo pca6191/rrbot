@@ -226,7 +226,7 @@
 <joint name="joint_fork_x" type="prismatic"> 
   <parent link="base_fork_x_link" />
   <child link="link_fork_x" />
-  <limit effort="100" velocity="0.2" lower="${-base_fork_x_width/2}" upper="${base_fork_x_width/2}" />
+  <limit effort="100" velocity="0.2" lower="0" upper="${base_fork_x_width}" />
   <origin xyz="${-base_fork_x_width/2} 0 ${base_fork_x_height}" rpy="0 0 0" />
   <axis xyz="1 0 0" />
 </joint>

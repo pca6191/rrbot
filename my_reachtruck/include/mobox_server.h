@@ -48,10 +48,14 @@ public:
   bool send_packet();
 
   /// 給外部取得最新解析到的輪速、舵角命令
-  void get_trac_steer_cmd(double *mmps, double *cdeg);
+  double get_trac_mmps();
+  double get_steer_cdeg();
 
   /// 給外部取得最新解析到的貨叉命令
-  void get_fork_cmd(double *x_eff, double *y_eff, double *z_eff, double *rot_eff);
+  double get_fork_x_mmps();
+  double get_fork_y_mmps();
+  double get_fork_z_mmps();
+  double get_fork_rot_radps();
 
   /// 設置 trac sensor 讀到的 mmps
   void set_sensor_trac_mmps(double mmps);
@@ -73,7 +77,7 @@ private:
   bool parse_trac_steer_cmd(double *mmps, double *cdeg);
 
   /// 從封包取得貨叉命令
-  bool parse_fork_cmd(double *x_eff, double *y_eff, double *z_eff, double *rot_eff);
+  bool parse_fork_cmd(double *x_mmps, double *y_mmps, double *z_mmps, double *rot_radps);
 
   /// 受 thread 帶動讀包
   void read_reply_loop();
@@ -104,11 +108,15 @@ private:
   // 設置到模擬器的目標物理量
   double target_trac_mmps_ = 0.0;
   double target_steer_cdeg_ = 0.0;
-  double target_fork_x_effort_ = 0.0;  // 單位：nt
-  double target_fork_y_effort_ = 0.0;  // 單位：nt
-  double target_fork_z_effort_ = 0.0;  // 單位：nt
-  double target_fork_rot_effort_ = 0.0;  // 單位：nt
+  double target_fork_x_mmps_ = 0.0;
+  double target_fork_y_mmps_ = 0.0;
+  double target_fork_z_mmps_ = 0.0;
+  double target_fork_rot_radps_ = 0.0;
 
+  // 假設：將 pump rpm , valve 開口，轉成速度 mm/s (後續根據實測調整)
+  const double pump_rpm_to_mmps_ = 200.0 / 2000.0;  // 2000 rmp to 200 mm/s
+  const double valve_to_mmps_ = 200.0 / 255.0;  // valve open 255 to 200 mm/s
+  const double pump_rpm_to_radps_ =  0.2 / 2000.0;  // 2000 rmp to 0.2 rad/s
   // 從模擬器取得的回授物理量
   double sensor_trac_mmps_ = 0.0;
   double sensor_steer_cdeg_ = 0.0;

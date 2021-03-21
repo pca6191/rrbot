@@ -11,7 +11,7 @@ reachtruck:
     pid: {p: 1.0, i: 0.00, d: 0.00}
 
   # Position Controllers ---------------------------------------
-  joint_steer_velocity_controller:
+  joint_steer_position_controller:
     type: velocity_controllers/JointPositionController
     joint: joint_steer
     pid: {p: 1.0, i: 0.00, d: 0.00}

@@ -156,18 +156,34 @@ bool MoBoxServer::send_packet()
   return true;
 }
 
-void MoBoxServer::get_trac_steer_cmd(double *mmps, double *cdeg)
+double MoBoxServer::get_trac_mmps()
 {
-  (*mmps) =  target_trac_mmps_;
-  (*cdeg) = target_steer_cdeg_;
+  return target_trac_mmps_;
 }
 
-void MoBoxServer::get_fork_cmd(double *x_eff, double *y_eff, double *z_eff, double *rot_eff)
+double MoBoxServer::get_steer_cdeg()
 {
-  (*x_eff) = target_fork_x_effort_;
-  (*y_eff) = target_fork_y_effort_;
-  (*z_eff) = target_fork_z_effort_;
-  (*rot_eff) = target_fork_rot_effort_;
+  return target_steer_cdeg_;
+}
+
+double MoBoxServer::get_fork_x_mmps()
+{
+  return target_fork_x_mmps_;
+}
+
+double MoBoxServer::get_fork_y_mmps()
+{
+  return target_fork_y_mmps_;
+}
+
+double MoBoxServer::get_fork_z_mmps()
+{
+  return target_fork_z_mmps_;
+}
+
+double MoBoxServer::get_fork_rot_radps()
+{
+  return target_fork_rot_radps_;
 }
 
 void MoBoxServer::set_sensor_trac_mmps(double mmps)
@@ -274,14 +290,15 @@ bool MoBoxServer::parse_trac_steer_cmd(double *mmps, double *cdeg)
   return true;
 }
 
-bool MoBoxServer::parse_fork_cmd(double *x_eff, double *y_eff, double *z_eff, double *rot_eff)
+bool MoBoxServer::parse_fork_cmd(double *x_mmps, double *y_mmps, double *z_mmps, double *rot_radps)
 {
+  (*x_mmps) = 0.0;
+  (*y_mmps) = 0.0;
+  (*z_mmps) = 0.0;
+  (*rot_radps) = 0.0;
+
   if (packet_recieved_.size() < static_cast<size_t>(sizeof_packet_)) {
-    // 資料不可信，回傳 0 以策安全
-    (*x_eff) = 0.0;
-    (*y_eff) = 0.0;
-    (*z_eff) = 0.0;
-    (*rot_eff) = 0.0;
+    // 資料不可信
     return false;
   }
 
@@ -289,14 +306,44 @@ bool MoBoxServer::parse_fork_cmd(double *x_eff, double *y_eff, double *z_eff, do
     return false;
   }
 
-//  int16_t v = packet_recieved_[5] | (packet_recieved_[6] << 8);
-//  int16_t p = packet_recieved_[7] | (packet_recieved_[8] << 8);
-//  int16_t s = packet_recieved_[9] | (packet_recieved_[10] << 8);
-//  (*valve) = static_cast<double>(v);
-//  (*pump_rpm) = static_cast<double>(p);
-//  (*switches) = static_cast<double>(s);
+  // ** 假設 pump 2000 rpm 對應 200 mm/s, 閥門 255 對應下降 20 cm/s **
+  int16_t valve = packet_recieved_[5] | (packet_recieved_[6] << 8);
+  int16_t pump_rpm = packet_recieved_[7] | (packet_recieved_[8] << 8);
+  int16_t swptn = packet_recieved_[9] | (packet_recieved_[10] << 8);
 
-  // 轉成模擬器個方位的貨叉推力
+  double pump_mmps = pump_rpm * pump_rpm_to_mmps_;
+  double valve_mmps = valve * valve_to_mmps_;
+  double pump_radps = pump_rpm * pump_rpm_to_radps_;
+
+  // 根據 pattern 決定 x/y/z/rot 哪個有速度:
+  // bit: [0]下 [1]後 [2]前 [3]右 [4]左 [5]傾 [6]仰 [7]升
+  if (((swptn >> 0) & 0x01) == 0x01) {
+    *z_mmps = -valve_mmps;
+  }
+  else if (((swptn >> 1) & 0x01) == 0x01) {
+    *y_mmps = -pump_mmps;
+  }
+  else if (((swptn >> 2) & 0x01) == 0x01) {
+    *y_mmps = pump_mmps;
+  }
+  else if (((swptn >> 3) & 0x01) == 0x01) {
+    *x_mmps = pump_mmps;
+  }
+  else if (((swptn >> 4) & 0x01) == 0x01) {
+    *x_mmps = -pump_mmps;
+  }
+  else if (((swptn >> 5) & 0x01) == 0x01) {
+    *rot_radps = -pump_radps;
+  }
+  else if (((swptn >> 6) & 0x01) == 0x01) {
+    *rot_radps = pump_radps;
+  }
+  else if (((swptn >> 7) & 0x01) == 0x01) {
+    *z_mmps = valve_mmps;
+  }
+  else {
+    // do nothing
+  }
 
   return true;
 }
@@ -312,10 +359,10 @@ void MoBoxServer::read_reply_loop()
         ROS_INFO_THROTTLE(1, "[%s](1Hz) steer cmd (deg): %lf", class_name_.c_str(), target_steer_cdeg_ / 100.0);
       }
 
-      if (parse_fork_cmd(&target_fork_x_effort_, &target_fork_y_effort_, &target_fork_z_effort_,
-          &target_fork_rot_effort_)) {
-        ROS_INFO_THROTTLE(1, "[%s](1Hz) fork eff x/y/z/rot (nt): %lf %lf %lf %lf", class_name_.c_str(),
-            target_fork_x_effort_, target_fork_y_effort_, target_fork_z_effort_, target_fork_rot_effort_);
+      if (parse_fork_cmd(&target_fork_x_mmps_, &target_fork_y_mmps_, &target_fork_z_mmps_,
+          &target_fork_rot_radps_)) {
+        ROS_INFO_THROTTLE(1, "[%s](1Hz) fork x/y/z/rot (m/s): %lf %lf %lf %lf", class_name_.c_str(),
+            target_fork_x_mmps_, target_fork_y_mmps_, target_fork_z_mmps_, target_fork_rot_radps_);
       }
     }  // wait_for_reply
   }  // while
