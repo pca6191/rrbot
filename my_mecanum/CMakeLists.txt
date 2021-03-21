@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(my_mecanum)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-#  gazebo
+  gazebo
   geometry_msgs
   joint_state_controller
   nav_msgs
@@ -149,17 +149,19 @@ list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(mecanum_odom_controller src/mecanum_odom_controller.cpp)
-target_link_libraries(mecanum_odom_controller ${catkin_LIBRARIES})
-add_dependencies(mecanum_odom_controller my_mecanum_generate_messages_cpp)
 
-add_executable(mecanum_wheel_vel_controller src/mecanum_wheel_vel_controller.cpp)
-target_link_libraries(mecanum_wheel_vel_controller ${catkin_LIBRARIES})
-add_dependencies(mecanum_wheel_vel_controller my_mecanum_generate_messages_cpp)
+##### 以下暫時註解封存 , 將來間再調解 compile 不過的問題
+#add_executable(mecanum_odom_controller src/mecanum_odom_controller.cpp)
+#target_link_libraries(mecanum_odom_controller ${catkin_LIBRARIES})
+#add_dependencies(mecanum_odom_controller my_mecanum_generate_messages_cpp)
 
-add_library(mecenum_gazebo_controller SHARED src/mecenum_gazebo_controller.cc)
-target_link_libraries(mecenum_gazebo_controller ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
+#add_executable(mecanum_wheel_vel_controller src/mecanum_wheel_vel_controller.cpp)
+#target_link_libraries(mecanum_wheel_vel_controller ${catkin_LIBRARIES})
+#add_dependencies(mecanum_wheel_vel_controller my_mecanum_generate_messages_cpp)
 
+# add_library(mecenum_gazebo_controller SHARED src/mecenum_gazebo_controller.cc)
+# target_link_libraries(mecenum_gazebo_controller ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
+########## end  封存
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
