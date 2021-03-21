@@ -94,16 +94,16 @@ bool MoBoxServer::send_packet()
   };
 
   // 配置封包
-  m_pkt[9] = lo_byte(target_trac_mmps_);
-  m_pkt[10] = hi_byte(target_trac_mmps_);
-  m_pkt[11] = lo_byte(target_steer_cdeg_);
-  m_pkt[12] = hi_byte(target_steer_cdeg_);
+  m_pkt[9] = lo_byte(sensor_trac_mmps_);
+  m_pkt[10] = hi_byte(sensor_trac_mmps_);
+  m_pkt[11] = lo_byte(sensor_steer_cdeg_);
+  m_pkt[12] = hi_byte(sensor_steer_cdeg_);
 
-  uint16_t crc = util_crc_calc(m_pkt, static_cast<uint16_t>(sizeof_packet_));
+  uint16_t crc = util_crc_calc(m_pkt, static_cast<uint16_t>(sizeof_packet_ - 3));
   m_pkt[13] = (crc & 0x00FF);
   m_pkt[14] = ((crc & 0xFF00) >> 8);
 
-  pkt.assign(&m_pkt[0], &m_pkt[sizeof_packet_-1]);
+  pkt.assign(&m_pkt[0], &m_pkt[sizeof_packet_]);
 
   try {
     size_t sent_size = serial_.write(pkt);
@@ -130,16 +130,16 @@ bool MoBoxServer::send_packet()
   };
 
   // 配置封包
-  f_pkt[9] = lo_byte(sensor_steer_fork_y_mm_);
-  f_pkt[10] = hi_byte(sensor_steer_fork_y_mm_);
-  f_pkt[11] = lo_byte(sensor_steer_fork_z_mm_);
-  f_pkt[12] = hi_byte(sensor_steer_fork_z_mm_);
+  f_pkt[7] = lo_byte(sensor_fork_y_mm_);
+  f_pkt[8] = hi_byte(sensor_fork_y_mm_);
+  f_pkt[9] = lo_byte(sensor_fork_z_mm_);
+  f_pkt[10] = hi_byte(sensor_fork_z_mm_);
 
-  crc = util_crc_calc(f_pkt, static_cast<uint16_t>(sizeof_packet_));
+  crc = util_crc_calc(f_pkt, static_cast<uint16_t>(sizeof_packet_ - 3));
   f_pkt[13] = (crc & 0x00FF);
   f_pkt[14] = ((crc & 0xFF00) >> 8);
 
-  pkt.assign(&f_pkt[0], &f_pkt[sizeof_packet_-1]);
+  pkt.assign(&f_pkt[0], &f_pkt[sizeof_packet_]);
 
   try {
     size_t sent_size = serial_.write(pkt);
@@ -198,12 +198,12 @@ void MoBoxServer::set_sensor_steer_cdeg(double cdeg)
 
 void MoBoxServer::set_sensor_fork_y_mm(double mm)
 {
-  sensor_steer_fork_y_mm_ = mm;
+  sensor_fork_y_mm_ = mm;
 }
 
 void MoBoxServer::set_sensor_fork_z_mm(double mm)
 {
-  sensor_steer_fork_z_mm_ = mm;
+  sensor_fork_z_mm_ = mm;
 }
 
 bool MoBoxServer::wait_for_reply()
@@ -316,7 +316,7 @@ bool MoBoxServer::parse_fork_cmd(double *x_mmps, double *y_mmps, double *z_mmps,
   double pump_radps = pump_rpm * pump_rpm_to_radps_;
 
   // 根據 pattern 決定 x/y/z/rot 哪個有速度:
-  // bit: [0]下 [1]後 [2]前 [3]右 [4]左 [5]傾 [6]仰 [7]升
+  // bit: [0]下 [1]後 [2]前 [3]右 [4]左 [5]叉仰 [6]叉俯 [7]升
   if (((swptn >> 0) & 0x01) == 0x01) {
     *z_mmps = -valve_mmps;
   }
@@ -333,13 +333,13 @@ bool MoBoxServer::parse_fork_cmd(double *x_mmps, double *y_mmps, double *z_mmps,
     *x_mmps = -pump_mmps;
   }
   else if (((swptn >> 5) & 0x01) == 0x01) {
-    *rot_radps = -pump_radps;
-  }
-  else if (((swptn >> 6) & 0x01) == 0x01) {
     *rot_radps = pump_radps;
   }
+  else if (((swptn >> 6) & 0x01) == 0x01) {
+    *rot_radps = -pump_radps;
+  }
   else if (((swptn >> 7) & 0x01) == 0x01) {
-    *z_mmps = valve_mmps;
+    *z_mmps = pump_mmps;
   }
   else {
     // do nothing

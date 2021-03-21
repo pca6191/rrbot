@@ -33,7 +33,7 @@ bool Parameters::get_one_parameters(std::string key, T *value)
 
 bool Parameters::get_parameters()
 {
-  if (!get_one_parameters("/user_param/serial_port", &serial_port_)) {
+  if (!get_one_parameters("/user_param/serial_port_simulation", &serial_port_)) {
     return false;
   }
 

@@ -120,8 +120,8 @@ private:
   // 從模擬器取得的回授物理量
   double sensor_trac_mmps_ = 0.0;
   double sensor_steer_cdeg_ = 0.0;
-  double sensor_steer_fork_y_mm_ = 0.0;
-  double sensor_steer_fork_z_mm_ = 0.0;
+  double sensor_fork_y_mm_ = 0.0;
+  double sensor_fork_z_mm_ = 0.0;
 };
 
 }  // namespace amr

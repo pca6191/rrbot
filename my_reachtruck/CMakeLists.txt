@@ -130,7 +130,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(mbx_server_mima_node src/mbx_mima_driver_node.cpp
+add_executable(mbx_mima_driver_node src/mbx_mima_driver_node.cpp
                                     src/parameters.cpp
                                     src/mobox_server.cpp
                                     src/util_crc.cpp)
@@ -147,7 +147,7 @@ add_executable(mbx_server_mima_node src/mbx_mima_driver_node.cpp
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(
-   mbx_server_mima_node
+   mbx_mima_driver_node
    ${catkin_LIBRARIES}
 )
 

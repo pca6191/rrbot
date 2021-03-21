@@ -73,6 +73,10 @@ public:
       fork_rot_cmd_pub_.publish(get_fork_rot_effort());
 
       // 回應 (sensor) 狀態
+      mobox_server_->set_sensor_trac_mmps(-1000.0);
+      mobox_server_->set_sensor_steer_cdeg(-9000.0);
+      mobox_server_->set_sensor_fork_y_mm(-2000.0);
+      mobox_server_->set_sensor_fork_z_mm(-3000.0);
       if (!mobox_server_->send_packet()) {
         ROS_ERROR("[%s] send_packet() error !", class_name_);
       }
