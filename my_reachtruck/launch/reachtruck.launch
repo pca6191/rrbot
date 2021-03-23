@@ -9,7 +9,7 @@
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find rrbot_gazebo)/worlds/rrbot.world"/>
+    <arg name="world_name" value="$(find my_reachtruck)/worlds/reachtruck.world"/>
     <arg name="debug" value="$(arg debug)" />
     <arg name="gui" value="$(arg gui)" />
     <arg name="paused" value="$(arg paused)"/>
@@ -27,7 +27,10 @@
     args="-urdf -model reachtruck -param robot_description"/>
 
   <!-- Load joint controller configurations from YAML file to parameter server -->
-  <rosparam file="$(find my_reachtruck)/config/reachtruck_control.yaml" command="load"/>
+  <rosparam command="load" file="$(find my_reachtruck)/config/reachtruck_control.yaml" />
+  
+  <!-- Load control definitions -->
+  <rosparam command = "load" file="$(env HOME)/.ros/user_param.yaml" />
 
   <!-- load the controllers -->
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
@@ -38,6 +41,10 @@
 					       joint_fork_y_velocity_controller
 					       joint_fork_z_velocity_controller
 					       joint_fork_rot_velocity_controller" />
+			
+  <!-- the mobox server node to rx/tx rs232 commands from/to amr_mima -->
+  <node name="mbx_server" pkg="my_reachtruck" type="mbx_mima_driver_node" output="screen">
+  </node>		
 
   <!-- convert joint states to TF transforms for rviz, etc -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"

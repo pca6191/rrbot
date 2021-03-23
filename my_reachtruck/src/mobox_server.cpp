@@ -369,8 +369,10 @@ void MoBoxServer::read_reply_loop()
 
       if (parse_fork_cmd(&target_fork_x_mmps_, &target_fork_y_mmps_, &target_fork_z_mmps_,
           &target_fork_rot_radps_)) {
-        ROS_INFO_THROTTLE(1, "[%s](1Hz) fork x/y/z/rot (m/s): %lf %lf %lf %lf", class_name_.c_str(),
-            target_fork_x_mmps_, target_fork_y_mmps_, target_fork_z_mmps_, target_fork_rot_radps_);
+        ROS_INFO_THROTTLE(1, "[%s](1Hz) fork x/y/z (m/s): %lf %lf %lf", class_name_.c_str(),
+            target_fork_x_mmps_ / 1000.0, target_fork_y_mmps_ / 1000.0, target_fork_z_mmps_ / 1000.0);
+        ROS_INFO_THROTTLE(1, "[%s](1Hz) fork rotate (deg/s): %lf", class_name_.c_str(),
+            target_fork_rot_radps_ * 180.0 / M_PI);
       }
     }  // wait_for_reply
   }  // while

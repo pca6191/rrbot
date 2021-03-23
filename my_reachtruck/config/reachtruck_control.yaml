@@ -6,7 +6,7 @@ reachtruck:
   
   # Vellocity Controllers ---------------------------------------
   joint_trac_velocity_controller:
-    type: effort_controllers/JointVelocityController
+    type: velocity_controllers/JointVelocityController
     joint: joint_trac
     pid: {p: 1.0, i: 0.00, d: 0.00}
 
@@ -18,24 +18,24 @@ reachtruck:
 
   # Vellocity Controllers ---------------------------------------
   joint_fork_x_velocity_controller:
-    type: effort_controllers/JointVelocityController
+    type: velocity_controllers/JointVelocityController
     joint: joint_fork_x
     pid: {p: 1.0, i: 0.00, d: 0.00}
 
   # Vellocity Controllers ---------------------------------------
   joint_fork_y_velocity_controller:
-    type: effort_controllers/JointVelocityController
+    type: velocity_controllers/JointVelocityController
     joint: joint_fork_y
     pid: {p: 1.0, i: 0.00, d: 0.00}
 
   # Vellocity Controllers ---------------------------------------
   joint_fork_z_velocity_controller:
-    type: effort_controllers/JointVelocityController
+    type: velocity_controllers/JointVelocityController
     joint: joint_fork_z
     pid: {p: 1.0, i: 0.00, d: 0.00}
 
   # Vellocity Controllers ---------------------------------------
   joint_fork_rot_velocity_controller:
-    type: effort_controllers/JointVelocityController
+    type: velocity_controllers/JointVelocityController
     joint: joint_fork_rot
     pid: {p: 1.0, i: 0.00, d: 0.00}

@@ -64,15 +64,23 @@ public:
       std_msgs::Float64 val;
 
       // 設置 trac / steer 動作
-      trac_cmd_pub_.publish(get_trac_radps());
-      steer_cmd_pub_.publish(get_steer_rad());
-      // 設置 fork 動作
-      fork_x_cmd_pub_.publish(get_fork_x_effort());
-      fork_y_cmd_pub_.publish(get_fork_y_effort());
-      fork_z_cmd_pub_.publish(get_fork_z_effort());
-      fork_rot_cmd_pub_.publish(get_fork_rot_effort());
+      val = get_trac_radps();
+      trac_cmd_pub_.publish(val);
+      val = get_steer_rad();
+      steer_cmd_pub_.publish(val);
 
-      // 回應 (sensor) 狀態
+      // 設置 fork 動作
+      val = get_fork_x_mps();
+      fork_x_cmd_pub_.publish(val);
+      val = get_fork_y_mps();
+      fork_y_cmd_pub_.publish(val);
+      val = get_fork_z_mps();
+      fork_z_cmd_pub_.publish(val);
+      val = get_fork_rot_radps();
+      fork_rot_cmd_pub_.publish(val);
+
+      // gazebo 透過 callback 時時更新 位置、速度情報 (相當於 sensor 情報)給 mobox server
+      // 這裡將現況 (sensor 情報) 送給 amr_mima
       if (!mobox_server_->send_packet()) {
         ROS_ERROR("[%s] send_packet() error !", class_name_);
       }
@@ -89,74 +97,44 @@ public:
 private:
   std_msgs::Float64 get_trac_radps()
   {
-    std_msgs::Float64 v;
-    double mmps;
-    mmps = mobox_server_->get_trac_mmps();
-    v.data = mmps / 1000.0 / mima_wheel_radius_;  // 轉成 rad/s
-
-    return v;  // 傳出角速度，讓模擬器轉動感覺，合乎實際輪子轉起來的感覺
+    std_msgs::Float64 radps;
+    radps.data = mobox_server_->get_trac_mmps() / 1000.0 / mima_wheel_radius_;  // 轉成 rad/s
+    return radps;  // 傳出角速度，讓模擬器轉動感覺，合乎實際輪子轉起來的感覺
   }
 
   std_msgs::Float64 get_steer_rad()
   {
-    std_msgs::Float64 v;
-    double cdeg;
-    cdeg = mobox_server_->get_steer_cdeg();
-    v.data = cdeg / 100.0 / 180 * M_PI;  // 轉成 rad
-
-    return v;  // 傳出 rad
+    std_msgs::Float64 rad;
+    rad.data = mobox_server_->get_steer_cdeg() / 100.0 / 180 * M_PI;  // 轉成 rad
+    return rad;  // 傳出 rad
   }
 
-  std_msgs::Float64 get_fork_x_effort()
+  std_msgs::Float64 get_fork_x_mps()
   {
-    std_msgs::Float64 v;
-    double mmps;
-    mmps = mobox_server_->get_fork_x_mmps();
-    // 目前 urdf 使用 effor to velocity，且限制速率上限，所以給力就馬上到達速率極限
-    // 未來要換成 velocity to velocity 控制器，才能控制速度
-    v.data = (mmps > 0) ? effort_hor_ :
-             (mmps < 0) ? -effort_hor_ : 0.0;  // 轉成 NT
-
-    return v;
+    std_msgs::Float64 mps;
+    mps.data = mobox_server_->get_fork_x_mmps() / 1000.0;
+    return mps;
   }
 
-  std_msgs::Float64 get_fork_y_effort()
+  std_msgs::Float64 get_fork_y_mps()
   {
-    std_msgs::Float64 v;
-    double mmps;
-    mmps = mobox_server_->get_fork_y_mmps();
-    // 目前 urdf 使用 effor to velocity，且限制速率上限，所以給力就馬上到達速率極限
-    // 未來要換成 velocity to velocity 控制器，才能控制速度
-    v.data = (mmps > 0) ? effort_hor_ :
-             (mmps < 0) ? -effort_hor_ : 0.0;  // 轉成 NT
-
-    return v;
+    std_msgs::Float64 mps;
+    mps.data = mobox_server_->get_fork_y_mmps() / 1000.0;
+    return mps;
   }
 
-  std_msgs::Float64 get_fork_z_effort()
+  std_msgs::Float64 get_fork_z_mps()
   {
-    std_msgs::Float64 v;
-    double mmps;
-    mmps = mobox_server_->get_fork_z_mmps();
-    // 目前 urdf 使用 effor to velocity，且限制速率上限，所以給力就馬上到達速率極限
-    // 未來要換成 velocity to velocity 控制器，才能控制速度
-    v.data = (mmps > 0) ? effort_ver_up_ :
-             (mmps < 0) ? -effort_ver_down_ : effort_ver_stop_;  // 轉成 NT
-
-    return v;
+    std_msgs::Float64 mps;
+    mps.data = mobox_server_->get_fork_z_mmps() / 1000.0;
+    return mps;
   }
 
-  std_msgs::Float64 get_fork_rot_effort()
+  std_msgs::Float64 get_fork_rot_radps()
   {
-    std_msgs::Float64 v;
-    double mmps;
-    mmps = mobox_server_->get_fork_rot_radps();
-    // 目前 urdf 使用 effor to velocity，且限制速率上限，所以給力就馬上到達速率極限
-    // 未來要換成 velocity to velocity 控制器，才能控制速度
-    v.data = (mmps > 0) ? effort_hor_ :
-             (mmps < 0) ? -effort_hor_ : 0.0;  // 轉成 NT
-
-    return v;
+    std_msgs::Float64 radps;
+    radps.data = mobox_server_->get_fork_rot_radps();
+    return radps;
   }
 
   void update_joint_states_callback(const sensor_msgs::JointState::ConstPtr& msg)
@@ -181,7 +159,7 @@ private:
 
     // fork_z: m to mm
     double z_mm = msg->position[fork_z_index] * 1000.0;
-    mobox_server_->set_sensor_fork_z_mm(y_mm);
+    mobox_server_->set_sensor_fork_z_mm(z_mm);
 
     // x / rot 在米碼叉車沒有裝 sensor, 只能用時間目視控制, 這裡不作回授
   }
@@ -202,11 +180,6 @@ private:
 
   const int loop_rate_ = 50;  // 單位: Hz, 發送 cmd_vel 的頻率
   const double mima_wheel_radius_ = 0.19;  // 米碼舵輪半徑設計尺寸, 單位：m
-  const double effort_hor_ = 1.0;  // 單位: NT, 讓貨叉可以水平方向移動的力量
-  const double effort_ver_stop_ = 0.5 * 9.8;  // 單位: NT, 讓貨叉可以垂直撐住不動的力量
-                                              //  ex. 0.5 kg * 9.8 NT/kg (重力加速度)
-  const double effort_ver_up_ = effort_ver_stop_ + 0.2;  // 單位: NT, 讓貨叉可以垂直上升的力量
-  const double effort_ver_down_ = effort_ver_stop_ - 0.2;  // 單位: NT, 讓貨叉可以垂直下降的力量
 };
 
 }  // namespace amr

@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <cmath>
 #include <thread>
 #include <stdint.h>
 #include <serial/serial.h>
@@ -116,7 +117,7 @@ private:
   // 假設：將 pump rpm , valve 開口，轉成速度 mm/s (後續根據實測調整)
   const double pump_rpm_to_mmps_ = 200.0 / 2000.0;  // 2000 rmp to 200 mm/s
   const double valve_to_mmps_ = 200.0 / 255.0;  // valve open 255 to 200 mm/s
-  const double pump_rpm_to_radps_ =  0.2 / 2000.0;  // 2000 rmp to 0.2 rad/s
+  const double pump_rpm_to_radps_ =  3.0 / 180 * M_PI / 2000.0;  // 2000 rmp to 3.0 deg/s
   // 從模擬器取得的回授物理量
   double sensor_trac_mmps_ = 0.0;
   double sensor_steer_cdeg_ = 0.0;
